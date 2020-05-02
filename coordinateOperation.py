@@ -77,8 +77,8 @@ class coordinateOperation:
             self.getActualPosition()    #getting actual position from oculus
             if self.grip is True:   #grip is trigerred
                 if self.grip is not self.oldGrip:   #grip changed state, reseting relative coordinates
-                    self.oculusQuestConnectionInstance.resetZero()
-                    self.rebaseOculusToDobotCoordinates()
+                    self.oculusQuestConnectionInstance.resetZero() #sets coordinates system axis angle correctly
+                    self.rebaseOculusToDobotCoordinates()   #home actual position, avoid rapid arm moves
                     self.getActualPosition()
                 self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
                 self.moveDobotToPreparedPosition()  #move dobot to position
