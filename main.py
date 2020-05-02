@@ -17,23 +17,47 @@ oculusQuestConnectionInstance = oculusQuestConnection.oculusQuestConnection()
 # Y Up
 # Z Forward
 """
+homeX = None
+homeY = None
+homeZ = None
 homePosition = oculusQuestConnectionInstance.getPosition()
+def homePositionF():
+    homePosition = oculusQuestConnectionInstance.getPosition()
+    homeX = homePosition[0][3]
+    homeY = homePosition[2][3]
+    homeZ = homePosition[1][3]
+def relativeHome(x,y,z):
+    homePosition[0][3] = homePosition[0][3] - (x - oldPosition[0]) #+- 0.25
+    homePosition[2][3] = homePosition[2][3] - (y - oldPosition[1]) #+= 0.25
+    homePosition[1][3] = homePosition[1][3] - (z - oldPosition[2]) # +0.5 -0.1
+grip = False
+dobotHandlerInstance.setPosition(259.1198, 0, 8.5687)
+oldPosition = [homePosition[0][3], homePosition[2][3], homePosition[1][3]]
 while(1):
     position = oculusQuestConnectionInstance.getPosition()
+    oldGrip = grip
+    grip = oculusQuestConnectionInstance.getRightControllerGrip()
     x = position[0][3] - homePosition[0][3] #+- 0.25
     y = position[2][3] - homePosition[2][3] #+= 0.25
     z = position[1][3] - homePosition[1][3] # +0.5 -0.1
-    #print("X: %0.3f " % x, "Y: %0.3f " % y, "Z: %0.3f " % z)
+    if grip is not oldGrip and grip is True:
+        #relativeHome(x,y,z)
+        pass
+    print("X: %0.3f " % x, "Y: %0.3f " % y, "Z: %0.3f " % z, " grip: ", grip)
+    if grip is True:
+        oldPosition = [x,y,z]
+        oculusQuestConnectionInstance.resetZero()
+        xDobot = -y / 0.25 * 231.5 + 259.1198
+        yDobot = -x / 0.25 * 328 + 0
+        zDobot = z / 0.25 * 150 + 0 - 8.5687
+        if zDobot < -30:
+            zDobot = -30
+        dobotHandlerInstance.setPosition(xDobot, yDobot, zDobot)
 
-    xDobot = -y/0.25 * 231.5  + 259.1198
-    yDobot = -x/0.25 * 328 + 0
-    zDobot = z/0.25 * 150 + 0 -8.5687
-    if zDobot < -30:
-        zDobot = -30
+
 
     #print("X: %0.3f " % xDobot, "Y: %0.3f " % yDobot, "Z: %0.3f " % zDobot)
 
-    dobotHandlerInstance.setPosition(xDobot, yDobot, zDobot)
     #print(position)
 
     # x = position[0][0] - homePosition[0][0]
