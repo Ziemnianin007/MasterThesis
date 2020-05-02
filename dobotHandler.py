@@ -24,19 +24,21 @@ class dobotHandler:
         port = list_ports.comports()[0].device
         print(port)
         self.device = dobot.Dobot(port=port, verbose=False)
+        self.device.speed()
 
     def getPosition(self):
         (x, y, z, r, j1, j2, j3, j4) = self.device.pose()
         #print(f'x:{x} y:{y} z:{z} j1:{j1} j2:{j2} j3:{j3} j4:{j4}')
         return (x, y, z, r, j1, j2, j3, j4)
 
-    def setPosition(self, x = 259.1198, y = 0, z=-8.5687, r=0 ,wait = True):
-        self.device.speed()
+    def setPosition(self, x = 259.1198, y = 0, z=-8.5687, r=0 ,wait = False):
+        self.device._set_queued_cmd_clear()
         self.device.move_to(x, y, z, r, wait)
-        self.device._set_queued_cmd_start_exec()
+        #self.device.go(x, y, z, r, wait)
+        #self.device._set_queued_cmd_start_exec()
 
 
-    def closerToPosition(self, x = 259.1198, y = 0, z=-8.5687, r=0 ,wait = True):
+    def closerToPosition(self, x = 259.1198, y = 0, z=-8.5687, r=0 ,wait = False):
         self.device.speed()
         (xTo, yTo, zTo, r, j1, j2, j3, j4) = self.device.pose()
 
