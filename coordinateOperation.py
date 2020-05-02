@@ -43,18 +43,29 @@ class coordinateOperation:
     #     homePosition[1][3] = homePosition[1][3] - (z - oldPosition[2]) # +0.5 -0.1
 
     def dobotHome(self):
-        self.dobotHandlerInstance.setPosition(259.1198, 0, 8.5687) #going to dobot home
+        self.dobotHandlerInstance.setPosition(259.1198, 0, -8.5687) #going to dobot home
+        self.rightXLastDobot = 0
+        self.rightYLastDobot = 0
+        self.rightZLastDobot = 0
 
     def coordinateFromOculusToDobotTranslation(self):
+
+        #self.dobotX = -self.rightY / 0.25 * 231.5 + 259.1198
+        #self.dobotY = -self.rightX / 0.25 * 328 + 0
+        #self.dobotZ = self.rightZ / 0.25 * 150 + 0 - 8.5687
+        self.dobotX = -self.rightY *1000 + 259.1198
+        self.dobotY = -self.rightX *1000 + 0
+        self.dobotZ = self.rightZ *1000 + 0 - 8.5687
+        if self.dobotZ < -30:    #avoid ground contact
+            self.dobotZ = -30
         self.rightXLastDobot = self.rightX
         self.rightYLastDobot = self.rightY
         self.rightZLastDobot = self.rightZ
 
-        self.dobotX = -self.rightY / 0.25 * 231.5 + 259.1198
-        self.dobotY = -self.rightX / 0.25 * 328 + 0
-        self.dobotZ = self.rightZ / 0.25 * 150 + 0 - 8.5687
-        if self.dobotZ < -30:    #avoid ground contact
-            self.dobotZ = -30
+    def rebaseOculusToDobotCoordinates(self):
+        self.homeX = self.homeX + (self.rightX - self.rightXLastDobot)
+        self.homeY = self.homeY + (self.rightY - self.rightYLastDobot)
+        self.homeZ = self.homeZ + (self.rightZ - self.rightZLastDobot)
 
     def moveDobotToPreparedPosition(self):
         self.dobotHandlerInstance.setPosition(self.dobotX, self.dobotY, self.dobotZ)
@@ -67,6 +78,8 @@ class coordinateOperation:
             if self.grip is True:   #grip is trigerred
                 if self.grip is not self.oldGrip:   #grip changed state, reseting relative coordinates
                     self.oculusQuestConnectionInstance.resetZero()
+                    self.rebaseOculusToDobotCoordinates()
+                    self.getActualPosition()
                 self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
                 self.moveDobotToPreparedPosition()  #move dobot to position
 
