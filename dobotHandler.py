@@ -25,42 +25,48 @@ class dobotHandler:
         print(port)
         self.device = dobot.Dobot(port=port, verbose=False)
         self.device.speed()
+        self.position = None #(x, y, z, r, j1, j2, j3, j4)
+
+
+    def registeredPosition(self):
+        return self.position
 
     def getPosition(self):
-        (x, y, z, r, j1, j2, j3, j4) = self.device.pose()
+        self.position = self.device.pose()
         #print(f'x:{x} y:{y} z:{z} j1:{j1} j2:{j2} j3:{j3} j4:{j4}')
-        return (x, y, z, r, j1, j2, j3, j4)
+        return self.position
 
     def setPosition(self, x = 259.1198, y = 0, z=-8.5687, r=0 ,wait = False):
         self.device._set_queued_cmd_clear()
+        self.getPosition()
         self.device.move_to(x, y, z, r, wait)
         #self.device.go(x, y, z, r, wait)
         #self.device._set_queued_cmd_start_exec()
 
 
-    def closerToPosition(self, x = 259.1198, y = 0, z=-8.5687, r=0 ,wait = False):
-        self.device.speed()
-        (xTo, yTo, zTo, r, j1, j2, j3, j4) = self.device.pose()
+    def closerToPosition(self, x = 259.1198, y = 0, z=-8.5687, maxMove = 30, r=0 ,wait = False):
+        self.device._set_queued_cmd_clear()
+        self.getPosition()
+        (xTo, yTo, zTo, r, j1, j2, j3, j4) = self.position
 
-        maxMoveX = 30
-        maxMoveY = 30
-        maxMoveZ = 30
+        maxMoveX = maxMove
+        maxMoveY = maxMove
+        maxMoveZ = maxMove
 
-        xCloser = x - xTo
-        yCloser = y - yTo
-        zCloser = z - zTo
+        xCloser = x
+        yCloser = y
+        zCloser = z
 
-        if xCloser > xTo   +maxMoveX: xCloser = xTo   +maxMoveX
-        if xCloser < xTo   -maxMoveX: xCloser = xTo   -maxMoveX
+        if x > xTo   + maxMoveX: xCloser = xTo   + maxMoveX
+        if x < xTo   - maxMoveX: xCloser = xTo   -maxMoveX
 
-        if yCloser >  yTo  +maxMoveY: yCloser = yTo   +maxMoveY
-        if yCloser <  yTo  -maxMoveY: yCloser = yTo   -maxMoveY
+        if y >  yTo  +maxMoveY: yCloser = yTo   +maxMoveY
+        if y <  yTo  -maxMoveY: yCloser = yTo   -maxMoveY
 
-        if zCloser > zTo   +maxMoveZ: zCloser = zTo   +maxMoveZ
-        if zCloser < zTo   -maxMoveZ: zCloser = zTo   -maxMoveZ
-        print("X: %0.3f " % xCloser, "Y: %0.3f " % yCloser, "Z: %0.3f " % zCloser)
+        if z > zTo   +maxMoveZ: zCloser = zTo   +maxMoveZ
+        if z < zTo   -maxMoveZ: zCloser = zTo   -maxMoveZ
+        #print("X: %0.3f " % xCloser, "Y: %0.3f " % yCloser, "Z: %0.3f " % zCloser)
         self.device.move_to(xCloser, yCloser, zCloser, r, wait)
-        self.device._set_queued_cmd_start_exec()
 
     def __del__(self):
         self.device.close()

@@ -70,6 +70,9 @@ class coordinateOperation:
     def moveDobotToPreparedPosition(self):
         self.dobotHandlerInstance.setPosition(self.dobotX, self.dobotY, self.dobotZ)
 
+    def moveDobotCloserToPreparedPosition(self):
+        self.dobotHandlerInstance.closerToPosition(self.dobotX, self.dobotY, self.dobotZ)
+
     def run(self):
         self.dobotHome()    #dobot goes to home position
         self.oculusHomePosition() #oculus homing operation
@@ -81,7 +84,7 @@ class coordinateOperation:
                     self.rebaseOculusToDobotCoordinates()   #home actual position, avoid rapid arm moves
                     self.getActualPosition()
                 self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
-                self.moveDobotToPreparedPosition()  #move dobot to position
+                self.moveDobotCloserToPreparedPosition()  #move dobot to position
 
 
 
