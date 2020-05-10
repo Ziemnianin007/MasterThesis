@@ -1,14 +1,20 @@
 import dobotHandler
 import oculusQuestConnection
+import pprint
+import plotData
 
 class coordinateOperation:
-    def __init__(self):
+    def __init__(self, graphDataLength = 50):
         #home dobot magician in dobotstudio, then disconnect and run
         self.dobotHandlerInstance = dobotHandler.dobotHandler()
         self.oculusQuestConnectionInstance = oculusQuestConnection.oculusQuestConnection()
         self.oculusHomePosition()
         self.grip = False
         self.getActualPosition()
+        self.positionArray = []
+        self.dobotPositionTimeStamp = None
+        self.plotDataInstance = plotData.plotData()
+        self.graphDataLength = graphDataLength
 
     #x Min -135  Max 328    av 96.5     +- 231.5
     #y Min -328 Max 328     av 0        +- 328
@@ -47,6 +53,16 @@ class coordinateOperation:
         self.rightXLastDobot = 0
         self.rightYLastDobot = 0
         self.rightZLastDobot = 0
+        self.positionArray = {}
+        self.positionArray['oculusX'] = []
+        self.positionArray['oculusY'] = []
+        self.positionArray['oculusZ'] = []
+
+        self.positionArray['dobotX'] = []
+        self.positionArray['dobotY'] = []
+        self.positionArray['dobotZ'] = []
+
+        self.positionArray['timestamp'] = []
 
     def coordinateFromOculusToDobotTranslation(self):
 
@@ -68,11 +84,25 @@ class coordinateOperation:
         self.homeZ = self.homeZ + (self.rightZ - self.rightZLastDobot)
 
     def moveDobotToPreparedPosition(self):
-        self.dobotHandlerInstance.setPosition(self.dobotX, self.dobotY, self.dobotZ)
+        self.dobotPositionTimeStamp = self.dobotHandlerInstance.setPosition(self.dobotX, self.dobotY, self.dobotZ)
+        self.postionArrayAddDobotAndOculusPositions()
 
     def moveDobotCloserToPreparedPosition(self,maxMove = 30):
-        self.dobotHandlerInstance.closerToPosition(self.dobotX, self.dobotY, self.dobotZ, maxMove)
+        self.dobotPositionTimeStamp =self.dobotHandlerInstance.closerToPosition(self.dobotX, self.dobotY, self.dobotZ, maxMove)
+        self.postionArrayAddDobotAndOculusPositions()
 
+    def postionArrayAddDobotAndOculusPositions(self):
+        self.positionArray['oculusX'].append(self.dobotX)
+        self.positionArray['oculusY'].append(self.dobotY)
+        self.positionArray['oculusZ'].append(self.dobotZ)
+
+        self.positionArray['dobotX'].append(self.dobotPositionTimeStamp[0][0])
+        self.positionArray['dobotY'].append(self.dobotPositionTimeStamp[0][1])
+        self.positionArray['dobotZ'].append(self.dobotPositionTimeStamp[0][2])
+
+        self.positionArray['timestamp'].append(self.dobotPositionTimeStamp[1])
+        self.plotDataInstance.plot(self.positionArray['dobotX'],self.positionArray['timestamp'])
+        #pprint.pprint(self.positionArray)
 
     def runRawDriver(self):
         self.dobotHome()    #dobot goes to home position

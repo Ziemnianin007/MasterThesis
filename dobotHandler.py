@@ -46,10 +46,11 @@ class dobotHandler:
         return self.position, self.getTime
 
     def setPosition(self, x = 259.1198, y = 0, z=-8.5687, r=0 ,wait = False):
+        positionTimeStamp = self.getPositionTimeStamp()
         self.device._set_queued_cmd_clear()
         #self.getPosition()
         self.device.move_to(x, y, z, r, wait)
-        return self.getPositionTimeStamp()
+        return positionTimeStamp
         #self.device.go(x, y, z, r, wait)
         #self.device._set_queued_cmd_start_exec()
 
