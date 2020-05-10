@@ -2,9 +2,10 @@ import dobotHandler
 import oculusQuestConnection
 import pprint
 import plotData
+import fileOperation
 
 class coordinateOperation:
-    def __init__(self, graphDataLength = 50):
+    def __init__(self, graphDataLength = 50, plot = True, save = True):
         #home dobot magician in dobotstudio, then disconnect and run
         self.dobotHandlerInstance = dobotHandler.dobotHandler()
         self.oculusQuestConnectionInstance = oculusQuestConnection.oculusQuestConnection()
@@ -15,6 +16,8 @@ class coordinateOperation:
         self.dobotPositionTimeStamp = None
         self.plotDataInstance = plotData.plotData()
         self.graphDataLength = graphDataLength
+        self.plot = plot
+        self.save = save
 
     #x Min -135  Max 328    av 96.5     +- 231.5
     #y Min -328 Max 328     av 0        +- 328
@@ -110,10 +113,21 @@ class coordinateOperation:
 
         self.positionArray['timestamp'].append(self.dobotPositionTimeStamp[1])
 
-        self.plotDataInstance.plot(self.positionArray, self.graphDataLength)
+        if self.save is True:
+            fileOperation.saveToFolder(self.positionArray, path = self.path, silent = True)
+
+        if self.plot is True:
+            self.plotDataInstance.plot(self.positionArray, self.graphDataLength)
         #pprint.pprint(self.positionArray)
 
+    def loadData(self):
+        self.positionArray = fileOperation.loadJson(fileName = "name",extension=".json")[0]
+        self.plotDataInstance.plot(self.positionArray, self.graphDataLength)
+        while(True):
+            pass
+
     def runRawDriver(self):
+        self.path = fileOperation.saveToFolder(self.positionArray,name = 'movePathSave')
         self.dobotHome()    #dobot goes to home position
         self.oculusHomePosition() #oculus homing operation
         while(1):
@@ -127,6 +141,7 @@ class coordinateOperation:
                 self.moveDobotToPreparedPosition()  #move dobot to position
 
     def runCloserToPosition(self, maxMove = 30):
+        self.path = fileOperation.saveToFolder(self.positionArray,name = 'movePathSave')
         self.dobotHome()    #dobot goes to home position
         self.oculusHomePosition() #oculus homing operation
         while(1):

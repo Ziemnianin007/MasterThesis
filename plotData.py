@@ -1,5 +1,4 @@
 import matplotlib
-
 import matplotlib.pyplot as plt
 
 plt.show(block=False)
