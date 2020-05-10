@@ -62,6 +62,10 @@ class coordinateOperation:
         self.positionArray['dobotY'] = []
         self.positionArray['dobotZ'] = []
 
+        self.positionArray['diffX'] = []
+        self.positionArray['diffY'] = []
+        self.positionArray['diffZ'] = []
+
         self.positionArray['timestamp'] = []
 
     def coordinateFromOculusToDobotTranslation(self):
@@ -100,8 +104,13 @@ class coordinateOperation:
         self.positionArray['dobotY'].append(self.dobotPositionTimeStamp[0][1])
         self.positionArray['dobotZ'].append(self.dobotPositionTimeStamp[0][2])
 
+        self.positionArray['diffX'].append(self.positionArray['oculusX'][-1] - self.positionArray['dobotX'][-1])
+        self.positionArray['diffY'].append(self.positionArray['oculusY'][-1] - self.positionArray['dobotY'][-1])
+        self.positionArray['diffZ'].append(self.positionArray['oculusZ'][-1] - self.positionArray['dobotZ'][-1])
+
         self.positionArray['timestamp'].append(self.dobotPositionTimeStamp[1])
-        self.plotDataInstance.plot(self.positionArray['dobotX'],self.positionArray['timestamp'])
+
+        self.plotDataInstance.plot(self.positionArray, self.graphDataLength)
         #pprint.pprint(self.positionArray)
 
     def runRawDriver(self):
