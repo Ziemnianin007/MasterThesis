@@ -11,7 +11,7 @@ from mpl_toolkits.mplot3d import Axes3D
 class plotData:
     def __init__(self):
         self.fig2D, [[self.currentX,self.currentY,self.currentZ], [self.diffX, self.diffY, self.diffZ]] = plt.subplots(2, 3, sharex=True)
-        self.fig3D = plt.figure(figsize=(3, 8))
+        self.fig3D = plt.figure(figsize=(4, 8))
         self.current3D = self.fig3D.add_subplot(311, projection='3d')
         self.diff3D = self.fig3D.add_subplot(312, projection='3d')
         self.predicted3D = self.fig3D.add_subplot(313, projection='3d')
@@ -46,10 +46,33 @@ class plotData:
 
     def subLegend(self):
         self.currentX.legend(['ARM','VR'],prop={"size":6})
+        self.diffX.xaxis.set_label_coords(1.05, -0.025)
+        self.diffY.xaxis.set_label_coords(1.05, -0.025)
+        self.diffZ.xaxis.set_label_coords(1.05, -0.025)
+
+        self.currentX.set_ylabel('[mm]')
+        self.diffX.set_ylabel('[mm]')
+        self.diffX.set_xlabel('[s]')
+        self.diffY.set_xlabel('[s]')
+        self.diffZ.set_xlabel('[s]')
+
         # Put a legend below current axis
         self.currentY.legend(['ARM','VR'],prop={"size":6})
+        #self.currentY.set_zlabel('[mm]')
         self.currentZ.legend(['ARM','VR'],prop={"size":6})
         self.current3D.legend(['ARM','VR'],prop={"size":6})
+
+        self.current3D.set_xlabel('[mm]')
+        self.current3D.set_ylabel('[mm]')
+        self.current3D.set_zlabel('[mm]')
+
+        self.diff3D.set_xlabel('[mm]')
+        self.diff3D.set_ylabel('[mm]')
+        self.diff3D.set_zlabel('[mm]')
+
+        self.predicted3D.set_xlabel('[mm]')
+        self.predicted3D.set_ylabel('[mm]')
+        self.predicted3D.set_zlabel('[mm]')
 
     def plot_figures(figures, nrows=1, ncols=1):
         """Plot a dictionary of figures.

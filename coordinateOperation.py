@@ -3,6 +3,8 @@ import oculusQuestConnection
 import pprint
 import plotData
 import fileOperation
+import polynomialPrediction
+import matplotlib.pyplot as plt
 
 class coordinateOperation:
     def __init__(self, graphDataLength = 50, plot = True, save = True):
@@ -123,6 +125,7 @@ class coordinateOperation:
     def loadData(self):
         self.positionArray = fileOperation.loadJson(fileName = "name",extension=".json")[0]
         self.plotDataInstance.plot(self.positionArray, self.graphDataLength)
+        plt.show(block=True)
         while(True):
             pass
 
