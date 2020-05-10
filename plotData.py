@@ -60,7 +60,7 @@ class plotData:
         self.currentX.legend(['ARM','VR','PRE'],prop={"size":6})
         self.currentY.legend(['ARM','VR','PRE'],prop={"size":6})
         self.currentZ.legend(['ARM','VR','PRE'],prop={"size":6})
-        
+
         self.current3D.legend(['ARM','VR'],prop={"size":6})
 
         self.current3D.set_xlabel('[mm]')

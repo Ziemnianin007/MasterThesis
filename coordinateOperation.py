@@ -207,9 +207,9 @@ class coordinateOperation:
 
         #filling with points from array
         for i in range(backPoints):
-            pastPointsList[0][-i-1] = self.positionArray['dobotX'][-i-1]
-            pastPointsList[1][-i-1] = self.positionArray['dobotY'][-i-1]
-            pastPointsList[2][-i-1] = self.positionArray['dobotZ'][-i-1]
+            pastPointsList[0][-i-1] = self.positionArray['oculusX'][-i-1]
+            pastPointsList[1][-i-1] = self.positionArray['oculusY'][-i-1]
+            pastPointsList[2][-i-1] = self.positionArray['oculusZ'][-i-1]
             pastPointsList[3][-i-1] = self.positionArray['timestamp'][-i-1]
         nextTime = self.polynomialPredictionInstance.predict(pointIterating,pastPointsList[3],deg,backPoints+1)
         nextX = self.polynomialPredictionInstance.predict(pastPointsList[3],pastPointsList[0],deg,nextTime)

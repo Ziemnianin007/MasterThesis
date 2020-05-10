@@ -6,6 +6,6 @@ coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = Tru
 
 #coordinateOperationInstance.runRawDriver()
 #coordinateOperationInstance.runCloserToPosition(30)
-coordinateOperationInstance.runPolynomialPrediction(backPoints=8,deg=4)
+coordinateOperationInstance.runPolynomialPrediction(backPoints=6,deg=2)
 
 
