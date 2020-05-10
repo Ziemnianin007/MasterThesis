@@ -26,6 +26,7 @@ class dobotHandler:
         self.device = dobot.Dobot(port=port, verbose=False)
         self.device.speed()
         self.position = None #(x, y, z, r, j1, j2, j3, j4)
+        self.getTime = None
 
 
     def registeredPosition(self):
@@ -36,17 +37,26 @@ class dobotHandler:
         #print(f'x:{x} y:{y} z:{z} j1:{j1} j2:{j2} j3:{j3} j4:{j4}')
         return self.position
 
+    def getPositionTimeStamp(self):
+        beforeTime = time.time()
+        self.position = self.device.pose()
+        afterTime = time.time()
+        self.getTime = (afterTime + beforeTime)/2
+        #print(f'x:{x} y:{y} z:{z} j1:{j1} j2:{j2} j3:{j3} j4:{j4}')
+        return self.position, self.getTime
+
     def setPosition(self, x = 259.1198, y = 0, z=-8.5687, r=0 ,wait = False):
         self.device._set_queued_cmd_clear()
-        self.getPosition()
+        #self.getPosition()
         self.device.move_to(x, y, z, r, wait)
+        return self.getPositionTimeStamp()
         #self.device.go(x, y, z, r, wait)
         #self.device._set_queued_cmd_start_exec()
 
 
     def closerToPosition(self, x = 259.1198, y = 0, z=-8.5687, maxMove = 30, r=0 ,wait = False):
         self.device._set_queued_cmd_clear()
-        self.getPosition()
+        positionWithTimeStamp = self.getPositionTimeStamp()
         (xTo, yTo, zTo, r, j1, j2, j3, j4) = self.position
 
         maxMoveX = maxMove
@@ -67,6 +77,7 @@ class dobotHandler:
         if z < zTo   -maxMoveZ: zCloser = zTo   -maxMoveZ
         #print("X: %0.3f " % xCloser, "Y: %0.3f " % yCloser, "Z: %0.3f " % zCloser)
         self.device.move_to(xCloser, yCloser, zCloser, r, wait)
+        return positionWithTimeStamp
 
     def __del__(self):
         self.device.close()

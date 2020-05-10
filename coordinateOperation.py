@@ -70,10 +70,11 @@ class coordinateOperation:
     def moveDobotToPreparedPosition(self):
         self.dobotHandlerInstance.setPosition(self.dobotX, self.dobotY, self.dobotZ)
 
-    def moveDobotCloserToPreparedPosition(self):
-        self.dobotHandlerInstance.closerToPosition(self.dobotX, self.dobotY, self.dobotZ)
+    def moveDobotCloserToPreparedPosition(self,maxMove = 30):
+        self.dobotHandlerInstance.closerToPosition(self.dobotX, self.dobotY, self.dobotZ, maxMove)
 
-    def run(self):
+
+    def runRawDriver(self):
         self.dobotHome()    #dobot goes to home position
         self.oculusHomePosition() #oculus homing operation
         while(1):
@@ -84,8 +85,20 @@ class coordinateOperation:
                     self.rebaseOculusToDobotCoordinates()   #home actual position, avoid rapid arm moves
                     self.getActualPosition()
                 self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
-                self.moveDobotCloserToPreparedPosition()  #move dobot to position
+                self.moveDobotToPreparedPosition()  #move dobot to position
 
+    def runCloserToPosition(self, maxMove = 30):
+        self.dobotHome()    #dobot goes to home position
+        self.oculusHomePosition() #oculus homing operation
+        while(1):
+            self.getActualPosition()    #getting actual position from oculus
+            if self.grip is True:   #grip is trigerred
+                if self.grip is not self.oldGrip:   #grip changed state, reseting relative coordinates
+                    self.oculusQuestConnectionInstance.resetZero() #sets coordinates system axis angle correctly
+                    self.rebaseOculusToDobotCoordinates()   #home actual position, avoid rapid arm moves
+                    self.getActualPosition()
+                self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
+                self.moveDobotCloserToPreparedPosition(maxMove)  #move dobot closer to position
 
 
     #print("X: %0.3f " % xDobot, "Y: %0.3f " % yDobot, "Z: %0.3f " % zDobot)
