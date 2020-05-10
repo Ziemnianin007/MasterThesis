@@ -1,5 +1,6 @@
 import matplotlib
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import axes3d
 
 plt.show(block=False)
 plt.ion()
@@ -45,7 +46,6 @@ class plotData:
         self.predicted3D.clear()
 
     def subLegend(self):
-        self.currentX.legend(['ARM','VR'],prop={"size":6})
         self.diffX.xaxis.set_label_coords(1.05, -0.025)
         self.diffY.xaxis.set_label_coords(1.05, -0.025)
         self.diffZ.xaxis.set_label_coords(1.05, -0.025)
@@ -57,9 +57,10 @@ class plotData:
         self.diffZ.set_xlabel('[s]')
 
         # Put a legend below current axis
-        self.currentY.legend(['ARM','VR'],prop={"size":6})
-        #self.currentY.set_zlabel('[mm]')
-        self.currentZ.legend(['ARM','VR'],prop={"size":6})
+        self.currentX.legend(['ARM','VR','PRE'],prop={"size":6})
+        self.currentY.legend(['ARM','VR','PRE'],prop={"size":6})
+        self.currentZ.legend(['ARM','VR','PRE'],prop={"size":6})
+        
         self.current3D.legend(['ARM','VR'],prop={"size":6})
 
         self.current3D.set_xlabel('[mm]')
@@ -98,9 +99,9 @@ class plotData:
         else:
             gdl = len(plotData['timestamp'])
         self.subClear()
-        self.currentX.plot(plotData['timestamp'],plotData['dobotX'],plotData['timestamp'],plotData['oculusX'])
-        self.currentY.plot(plotData['timestamp'],plotData['dobotY'],plotData['timestamp'],plotData['oculusY'])
-        self.currentZ.plot(plotData['timestamp'],plotData['dobotZ'],plotData['timestamp'],plotData['oculusZ'])
+        self.currentX.plot(plotData['timestamp'],plotData['dobotX'],plotData['timestamp'],plotData['oculusX'],plotData['timestamp'],plotData['predictionX'])
+        self.currentY.plot(plotData['timestamp'],plotData['dobotY'],plotData['timestamp'],plotData['oculusY'],plotData['timestamp'],plotData['predictionY'])
+        self.currentZ.plot(plotData['timestamp'],plotData['dobotZ'],plotData['timestamp'],plotData['oculusZ'],plotData['timestamp'],plotData['predictionZ'])
 
         self.diffX.plot(plotData['timestamp'],plotData['diffX'],color = 'g')
         self.diffY.plot(plotData['timestamp'],plotData['diffY'],color = 'g')
@@ -108,7 +109,7 @@ class plotData:
 
         self.current3D.plot(plotData['dobotX'],plotData['dobotY'],plotData['dobotZ'],plotData['oculusX'],plotData['oculusY'],plotData['oculusZ'])
         self.diff3D.plot(plotData['diffX'],plotData['diffY'],plotData['diffZ'],color = 'g')
-        self.predicted3D.plot(plotData['diffX'],plotData['diffY'],plotData['diffZ'],color = 'g')
+        self.predicted3D.plot(plotData['predictionX'],plotData['predictionY'],plotData['predictionZ'],color = 'r')
 
         self.currentX.set_title('Current X')
         self.currentY.set_title('Current Y')
@@ -120,7 +121,7 @@ class plotData:
 
         self.current3D.set_title('Current 3D')
         self.diff3D.set_title('Diff 3D')
-        self.predicted3D.set_title('Diff 3D')
+        self.predicted3D.set_title('Prediction 3D')
 
         self.subLegend()
         self.fig2D.canvas.draw()

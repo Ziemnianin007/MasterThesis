@@ -5,7 +5,7 @@ import plotData
 import fileOperation
 import polynomialPrediction
 import matplotlib.pyplot as plt
-
+import time
 class coordinateOperation:
     def __init__(self, graphDataLength = 50, plot = True, save = True):
         #home dobot magician in dobotstudio, then disconnect and run
@@ -20,6 +20,7 @@ class coordinateOperation:
         self.graphDataLength = graphDataLength
         self.plot = plot
         self.save = save
+        self.polynomialPredictionInstance = polynomialPrediction.polynomalPrediction()
 
     #x Min -135  Max 328    av 96.5     +- 231.5
     #y Min -328 Max 328     av 0        +- 328
@@ -47,7 +48,7 @@ class coordinateOperation:
         self.rightX = position[0][3] - self.homeX  # +- 0.25
         self.rightY = position[2][3] - self.homeY  # += 0.25
         self.rightZ = position[1][3] - self.homeZ  # +0.5 -0.1
-        print("X: %0.3f " % self.rightX, "Y: %0.3f " % self.rightY, "Z: %0.3f " % self.rightZ, " grip: ", self.grip)
+
     # def relativeHome(self,x,y,z):
     #     homePosition[0][3] = homePosition[0][3] - (x - oldPosition[0]) #+- 0.25
     #     homePosition[2][3] = homePosition[2][3] - (y - oldPosition[1]) #+= 0.25
@@ -71,6 +72,10 @@ class coordinateOperation:
         self.positionArray['diffY'] = []
         self.positionArray['diffZ'] = []
 
+        self.positionArray['predictionX'] = []
+        self.positionArray['predictionY'] = []
+        self.positionArray['predictionZ'] = []
+
         self.positionArray['timestamp'] = []
 
     def coordinateFromOculusToDobotTranslation(self):
@@ -78,9 +83,12 @@ class coordinateOperation:
         #self.dobotX = -self.rightY / 0.25 * 231.5 + 259.1198
         #self.dobotY = -self.rightX / 0.25 * 328 + 0
         #self.dobotZ = self.rightZ / 0.25 * 150 + 0 - 8.5687
-        self.dobotX = -self.rightY *1000 + 259.1198
-        self.dobotY = -self.rightX *1000 + 0
-        self.dobotZ = self.rightZ *1000 + 0 - 8.5687
+        self.oculusX = -self.rightY *1000 + 259.1198
+        self.oculusY = -self.rightX *1000 + 0
+        self.oculusZ = self.rightZ *1000 + 0 - 8.5687
+        self.dobotX = self.oculusX
+        self.dobotY = self.oculusY
+        self.dobotZ = self.oculusZ
         if self.dobotZ < -30:    #avoid ground contact
             self.dobotZ = -30
         self.rightXLastDobot = self.rightX
@@ -93,21 +101,30 @@ class coordinateOperation:
         self.homeZ = self.homeZ + (self.rightZ - self.rightZLastDobot)
 
     def moveDobotToPreparedPosition(self):
+        if self.dobotZ < -30:    #avoid ground contact
+            self.dobotZ = -30
         self.dobotPositionTimeStamp = self.dobotHandlerInstance.setPosition(self.dobotX, self.dobotY, self.dobotZ)
         self.postionArrayAddDobotAndOculusPositions()
+        print("X: %0.3f " % self.rightX, "Y: %0.3f " % self.rightY, "Z: %0.3f " % self.rightZ, " grip: ", self.grip, "| dX: %0.3f " % self.dobotX, "dY: %0.3f " % self.dobotY, "dZ: %0.3f " % self.dobotZ)
 
     def moveDobotCloserToPreparedPosition(self,maxMove = 30):
+        if self.dobotZ < -30:    #avoid ground contact
+            self.dobotZ = -30
         self.dobotPositionTimeStamp =self.dobotHandlerInstance.closerToPosition(self.dobotX, self.dobotY, self.dobotZ, maxMove)
         self.postionArrayAddDobotAndOculusPositions()
 
     def postionArrayAddDobotAndOculusPositions(self):
-        self.positionArray['oculusX'].append(self.dobotX)
-        self.positionArray['oculusY'].append(self.dobotY)
-        self.positionArray['oculusZ'].append(self.dobotZ)
+        self.positionArray['oculusX'].append(self.oculusX)
+        self.positionArray['oculusY'].append(self.oculusY)
+        self.positionArray['oculusZ'].append(self.oculusZ)
 
         self.positionArray['dobotX'].append(self.dobotPositionTimeStamp[0][0])
         self.positionArray['dobotY'].append(self.dobotPositionTimeStamp[0][1])
         self.positionArray['dobotZ'].append(self.dobotPositionTimeStamp[0][2])
+
+        self.positionArray['predictionX'].append(self.dobotX)
+        self.positionArray['predictionY'].append(self.dobotY)
+        self.positionArray['predictionZ'].append(self.dobotZ)
 
         self.positionArray['diffX'].append(self.positionArray['oculusX'][-1] - self.positionArray['dobotX'][-1])
         self.positionArray['diffY'].append(self.positionArray['oculusY'][-1] - self.positionArray['dobotY'][-1])
@@ -156,6 +173,57 @@ class coordinateOperation:
                     self.getActualPosition()
                 self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
                 self.moveDobotCloserToPreparedPosition(maxMove)  #move dobot closer to position
+
+    def runPolynomialPrediction(self, backPoints = 10,deg = 5):
+        self.path = fileOperation.saveToFolder(self.positionArray,name = 'movePathSave')
+        self.dobotHome()    #dobot goes to home position
+        self.oculusHomePosition() #oculus homing operation
+        while(1):
+            self.getActualPosition()    #getting actual position from oculus
+            if self.grip is True:   #grip is trigerred
+                if self.grip is not self.oldGrip:   #grip changed state, reseting relative coordinates
+                    self.oculusQuestConnectionInstance.resetZero() #sets coordinates system axis angle correctly
+                    self.rebaseOculusToDobotCoordinates()   #home actual position, avoid rapid arm moves
+                    self.getActualPosition()
+                self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
+                if(len(self.positionArray['timestamp'])>0):
+                    self.doPolynomialPrediction(backPoints, deg)
+                self.moveDobotToPreparedPosition()  #move dobot to position
+
+    def doPolynomialPrediction(self,backPoints,deg=5):
+        #filling with zeros
+        pastPointsList = [[],[],[],[]]
+        pointIterating = []
+        actualTime = time.time()
+        for i in range(backPoints):
+            pointIterating.append(i)
+            pastPointsList[0].append(259.1198)
+            pastPointsList[1].append(0)
+            pastPointsList[2].append(-8.5687)
+            pastPointsList[3].append(actualTime - i*0.3)
+
+        if len(self.positionArray['timestamp']) < backPoints:
+            backPoints = len(self.positionArray['timestamp'])
+
+        #filling with points from array
+        for i in range(backPoints):
+            pastPointsList[0][-i-1] = self.positionArray['dobotX'][-i-1]
+            pastPointsList[1][-i-1] = self.positionArray['dobotY'][-i-1]
+            pastPointsList[2][-i-1] = self.positionArray['dobotZ'][-i-1]
+            pastPointsList[3][-i-1] = self.positionArray['timestamp'][-i-1]
+        nextTime = self.polynomialPredictionInstance.predict(pointIterating,pastPointsList[3],deg,backPoints+1)
+        nextX = self.polynomialPredictionInstance.predict(pastPointsList[3],pastPointsList[0],deg,nextTime)
+        nextY = self.polynomialPredictionInstance.predict(pastPointsList[3],pastPointsList[1],deg,nextTime)
+        nextZ = self.polynomialPredictionInstance.predict(pastPointsList[3],pastPointsList[2],deg,nextTime)
+
+
+        # nextX = self.polynomialPredictionInstance.predict(pointIterating,pastPointsList[0],deg,backPoints+1)
+        # nextY = self.polynomialPredictionInstance.predict(pointIterating,pastPointsList[1],deg,backPoints+1)
+        # nextZ = self.polynomialPredictionInstance.predict(pointIterating,pastPointsList[2],deg,backPoints+1)
+
+        self.dobotX = nextX
+        self.dobotY = nextY
+        self.dobotZ = nextZ
 
 
     #print("X: %0.3f " % xDobot, "Y: %0.3f " % yDobot, "Z: %0.3f " % zDobot)

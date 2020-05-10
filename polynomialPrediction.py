@@ -1,7 +1,7 @@
 import numpy
 class polynomalPrediction():
     def __init__(self):
-        self.loud = True
+        self.loud = False
 
     def predict(self,dataX = [1, 2, 3], dataY = [1, 4, 9], deg= 5, actualIn= 2):
 
