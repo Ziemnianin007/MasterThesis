@@ -164,25 +164,27 @@ class coordinateOperation:
     def moveDobotToPreparedPosition(self):
         if self.dobotZ < -30:    #avoid ground contact
             self.dobotZ = -30
+        dobotX, dobotY, dobotZ = self.dobotX, self.dobotY, self.dobotZ
         self.dobotPositionTimeStamp = self.dobotHandlerInstance.setPosition(self.dobotX, self.dobotY, self.dobotZ)
-        self.postionArrayAddDobotAndOculusPositions()
+        self.postionArrayAddDobotAndOculusPositions(dobotX, dobotY, dobotZ)
         print("X: %0.3f " % self.rightX, "Y: %0.3f " % self.rightY, "Z: %0.3f " % self.rightZ, " grip: ", self.grip, "| dX: %0.3f " % self.dobotX, "dY: %0.3f " % self.dobotY, "dZ: %0.3f " % self.dobotZ)
 
     def moveDobotCloserToPreparedPosition(self,maxMove = 30):
         if self.dobotZ < -30:    #avoid ground contact
             self.dobotZ = -30
+        dobotX, dobotY, dobotZ = self.dobotX, self.dobotY, self.dobotZ
         self.dobotPositionTimeStamp =self.dobotHandlerInstance.closerToPosition(self.dobotX, self.dobotY, self.dobotZ, maxMove)
-        self.postionArrayAddDobotAndOculusPositions()
+        self.postionArrayAddDobotAndOculusPositions(dobotX, dobotY, dobotZ)
 
-    def postionArrayAddDobotAndOculusPositions(self):
+    def postionArrayAddDobotAndOculusPositions(self, dobotX, dobotY, dobotZ):
 
         self.positionArray['dobotX'].append(self.dobotPositionTimeStamp[0][0])
         self.positionArray['dobotY'].append(self.dobotPositionTimeStamp[0][1])
         self.positionArray['dobotZ'].append(self.dobotPositionTimeStamp[0][2])
 
-        self.positionArray['predictionX'].append(self.dobotX)
-        self.positionArray['predictionY'].append(self.dobotY)
-        self.positionArray['predictionZ'].append(self.dobotZ)
+        self.positionArray['predictionX'].append(dobotX)
+        self.positionArray['predictionY'].append(dobotY)
+        self.positionArray['predictionZ'].append(dobotZ)
 
         self.positionArray['oculusXSynchronized'].append(self.oculusX)
         self.positionArray['oculusYSynchronized'].append(self.oculusY)
@@ -213,12 +215,10 @@ class coordinateOperation:
         self.dobotHome()    #dobot goes to home position
         self.oculusHomePosition() #oculus homing operation
         while(1):
-            self.getActualPosition()    #getting actual position from oculus
             if self.grip is True:   #grip is trigerred
                 if self.grip is not self.oldGrip:   #grip changed state, reseting relative coordinates
                     self.oculusQuestConnectionInstance.resetZero() #sets coordinates system axis angle correctly
                     self.rebaseOculusToDobotCoordinates()   #home actual position, avoid rapid arm moves
-                    self.getActualPosition()
                     self.recording = True
                 self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
                 self.moveDobotToPreparedPosition()  #move dobot to position
@@ -230,34 +230,35 @@ class coordinateOperation:
         self.dobotHome()    #dobot goes to home position
         self.oculusHomePosition() #oculus homing operation
         while(1):
-            self.getActualPosition()    #getting actual position from oculus
             if self.grip is True:   #grip is trigerred
                 if self.grip is not self.oldGrip:   #grip changed state, reseting relative coordinates
                     self.oculusQuestConnectionInstance.resetZero() #sets coordinates system axis angle correctly
                     self.rebaseOculusToDobotCoordinates()   #home actual position, avoid rapid arm moves
-                    self.getActualPosition()
                     self.recording = True
                 self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
                 self.moveDobotCloserToPreparedPosition(maxMove)  #move dobot closer to position
+            else:
+                self.recording = False
 
     def runPolynomialPrediction(self, backPoints = 10,deg = 5):
         self.path = fileOperation.saveToFolder(self.positionArray,name = 'movePathSave')
         self.dobotHome()    #dobot goes to home position
         self.oculusHomePosition() #oculus homing operation
         while(1):
-            self.getActualPosition()    #getting actual position from oculus
             if self.grip is True:   #grip is trigerred
                 if self.grip is not self.oldGrip:   #grip changed state, reseting relative coordinates
                     self.oculusQuestConnectionInstance.resetZero() #sets coordinates system axis angle correctly
                     self.rebaseOculusToDobotCoordinates()   #home actual position, avoid rapid arm moves
-                    self.getActualPosition()
                     self.recording = True
                 self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
                 if(len(self.positionArray['timestamp'])>0):
                     self.doPolynomialPrediction(backPoints, deg)
+                    print("predict")
                 self.moveDobotToPreparedPosition()  #move dobot to position
+            else:
+                self.recording = False
 
-    def doPolynomialPrediction(self,backPoints,deg=5):
+    def doPolynomialPrediction(self,backPoints,deg=5,backPointsTime=5,degTime=4):
         #filling with zeros
         pastPointsList = [[],[],[],[]]
         pointIterating = []
@@ -269,16 +270,17 @@ class coordinateOperation:
             pastPointsList[2].append(-8.5687)
             pastPointsList[3].append(actualTime - i*0.3)
 
-        if len(self.positionArray['timestamp']) < backPoints:
-            backPoints = len(self.positionArray['timestamp'])
+        if len(self.positionArray['timestamp']) < backPointsTime:
+            backPointsTime = len(self.positionArray['timestamp'])
 
         #filling with points from array
         for i in range(backPoints):
             pastPointsList[0][-i-1] = self.positionArray['oculusX'][-i-1]
             pastPointsList[1][-i-1] = self.positionArray['oculusY'][-i-1]
             pastPointsList[2][-i-1] = self.positionArray['oculusZ'][-i-1]
-            pastPointsList[3][-i-1] = self.positionArray['timestamp'][-i-1]
-        nextTime = self.polynomialPredictionInstance.predict(pointIterating,pastPointsList[3],deg,backPoints+1)
+            pastPointsList[3][-i-1] = self.positionArray['oculusTimeStamp'][-i-1]
+        nextTime = self.polynomialPredictionInstance.predict(pointIterating,pastPointsList[3],degTime,backPointsTime+1)
+        #nextTime = actualTime+2
         nextX = self.polynomialPredictionInstance.predict(pastPointsList[3],pastPointsList[0],deg,nextTime)
         nextY = self.polynomialPredictionInstance.predict(pastPointsList[3],pastPointsList[1],deg,nextTime)
         nextZ = self.polynomialPredictionInstance.predict(pastPointsList[3],pastPointsList[2],deg,nextTime)
