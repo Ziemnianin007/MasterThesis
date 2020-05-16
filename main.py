@@ -5,7 +5,7 @@ coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = Tru
 #coordinateOperationInstance.loadData() #loading data ============================
 
 #coordinateOperationInstance.runRawDriver()
-#coordinateOperationInstance.runCloserToPosition(30)
-coordinateOperationInstance.runPolynomialPrediction(backPoints=6,deg=2)
+coordinateOperationInstance.runCloserToPosition(30)
+#coordinateOperationInstance.runPolynomialPrediction(backPoints=6,deg=2)
 
 
