@@ -1,6 +1,6 @@
 import coordinateOperation
 
-coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = True, save = True)
+coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = False, save = True)
 
 #coordinateOperationInstance.loadData() #loading data ============================
 
