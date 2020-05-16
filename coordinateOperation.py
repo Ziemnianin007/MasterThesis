@@ -7,6 +7,7 @@ import polynomialPrediction
 import matplotlib.pyplot as plt
 import time
 import threading
+import neuralNetworkPrediction
 
 class coordinateOperation:
     def __init__(self, graphDataLength = 50, plot = True, save = True):
@@ -56,6 +57,8 @@ class coordinateOperation:
         self.plot = plot
         self.save = save
         self.polynomialPredictionInstance = polynomialPrediction.polynomalPrediction()
+
+        self.neuralNetworkPredictionInstance = neuralNetworkPrediction.neuralNetworkPrediction()
 
     #x Min -135  Max 328    av 96.5     +- 231.5
     #y Min -328 Max 328     av 0        +- 328
@@ -253,7 +256,6 @@ class coordinateOperation:
                 self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
                 if(len(self.positionArray['timestamp'])>0):
                     self.doPolynomialPrediction(backPoints, deg)
-                    print("predict")
                 self.moveDobotToPreparedPosition()  #move dobot to position
             else:
                 self.recording = False
