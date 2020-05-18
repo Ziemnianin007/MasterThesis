@@ -58,7 +58,7 @@ class coordinateOperation:
         self.save = save
         self.polynomialPredictionInstance = polynomialPrediction.polynomalPrediction()
 
-        self.neuralNetworkPredictionInstance = neuralNetworkPrediction.neuralNetworkPrediction()
+        #self.neuralNetworkPredictionInstance = neuralNetworkPrediction.neuralNetworkPrediction()
 
     #x Min -135  Max 328    av 96.5     +- 231.5
     #y Min -328 Max 328     av 0        +- 328
@@ -100,6 +100,7 @@ class coordinateOperation:
         self.homeX = homePosition[0][3]
         self.homeY = homePosition[2][3]
         self.homeZ = homePosition[1][3]
+
         return(self.homeX,self.homeY,self.homeZ)
 
     def getActualPosition(self):
@@ -220,6 +221,9 @@ class coordinateOperation:
         while(1):
             if self.grip is True:   #grip is trigerred
                 if self.grip is not self.oldGrip:   #grip changed state, reseting relative coordinates
+                    self.path = fileOperation.saveToFolder(self.positionArray, name='movePathSave')
+                    self.dobotHome()  # dobot goes to home position
+                    #self.oculusHomePosition()  # oculus homing operation
                     self.oculusQuestConnectionInstance.resetZero() #sets coordinates system axis angle correctly
                     self.rebaseOculusToDobotCoordinates()   #home actual position, avoid rapid arm moves
                     self.recording = True
@@ -235,6 +239,9 @@ class coordinateOperation:
         while(1):
             if self.grip is True:   #grip is trigerred
                 if self.grip is not self.oldGrip:   #grip changed state, reseting relative coordinates
+                    self.path = fileOperation.saveToFolder(self.positionArray, name='movePathSave')
+                    self.dobotHome()  # dobot goes to home position
+                    #self.oculusHomePosition()  # oculus homing operation
                     self.oculusQuestConnectionInstance.resetZero() #sets coordinates system axis angle correctly
                     self.rebaseOculusToDobotCoordinates()   #home actual position, avoid rapid arm moves
                     self.recording = True
@@ -250,6 +257,9 @@ class coordinateOperation:
         while(1):
             if self.grip is True:   #grip is trigerred
                 if self.grip is not self.oldGrip:   #grip changed state, reseting relative coordinates
+                    self.path = fileOperation.saveToFolder(self.positionArray, name='movePathSave')
+                    self.dobotHome()  # dobot goes to home position
+                    #self.oculusHomePosition()  # oculus homing operation
                     self.oculusQuestConnectionInstance.resetZero() #sets coordinates system axis angle correctly
                     self.rebaseOculusToDobotCoordinates()   #home actual position, avoid rapid arm moves
                     self.recording = True
