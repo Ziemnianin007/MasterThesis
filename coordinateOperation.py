@@ -215,7 +215,7 @@ class coordinateOperation:
             pass
 
     def runRawDriver(self):
-        self.path = fileOperation.saveToFolder(self.positionArray,name = 'movePathSave')
+        #self.path = fileOperation.saveToFolder(self.positionArray,name = 'movePathSave')
         self.dobotHome()    #dobot goes to home position
         self.oculusHomePosition() #oculus homing operation
         while(1):
@@ -233,7 +233,7 @@ class coordinateOperation:
                 self.recording = False
 
     def runCloserToPosition(self, maxMove = 30):
-        self.path = fileOperation.saveToFolder(self.positionArray,name = 'movePathSave')
+        #self.path = fileOperation.saveToFolder(self.positionArray,name = 'movePathSave')
         self.dobotHome()    #dobot goes to home position
         self.oculusHomePosition() #oculus homing operation
         while(1):
@@ -251,7 +251,7 @@ class coordinateOperation:
                 self.recording = False
 
     def runPolynomialPrediction(self, backPoints = 10,deg = 5):
-        self.path = fileOperation.saveToFolder(self.positionArray,name = 'movePathSave')
+        #self.path = fileOperation.saveToFolder(self.positionArray,name = 'movePathSave')
         self.dobotHome()    #dobot goes to home position
         self.oculusHomePosition() #oculus homing operation
         while(1):

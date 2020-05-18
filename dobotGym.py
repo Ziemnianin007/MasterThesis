@@ -3,7 +3,7 @@ import math
 import gym
 from gym import spaces
 import numpy as np
-
+import coordinateOperation
 
 class dobotGym(gym.Env):
 
@@ -14,6 +14,14 @@ class dobotGym(gym.Env):
     }
 
     def __init__(self):
+        self.coordinateOperationInstance = coordinateOperation.coordinateOperation(plot=False, save=False)
+
+        # coordinateOperationInstance.neuralNetworkPredictionInstance.predict()
+        # coordinateOperationInstance.loadDataWithLearning() #loading data ============================
+
+        self.coordinateOperationInstance.runRawDriver()
+        # coordinateOperationInstance.runCloserToPosition(30)
+        #coordinateOperationInstance.runPolynomialPrediction(backPoints=10, deg=5)
         self.gravity = 9.8
         self.masscart = 1.0
         self.masspole = 0.1
