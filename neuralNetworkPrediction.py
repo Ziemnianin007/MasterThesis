@@ -1,80 +1,92 @@
 import tensorflow as tf
 import keras
-
-from keras.models import Sequential
-from keras.layers import Dense
 from sklearn.datasets import make_blobs
 from sklearn.preprocessing import MinMaxScaler
 from numpy import array
-import rl
+from collections import deque
 
-class neuralNetworkPrediction:
+
+import gym
+import random
+import numpy as np
+from keras.layers import Dense, Flatten
+from keras.models import Sequential
+from keras.optimizers import Adam
+
+from keras.layers import LSTM
+from rl.agents import SARSAAgent
+from rl.policy import EpsGreedyQPolicy
+
+class DQN:
     def __init__(self):
-        self.loud = False
+
         physical_devices = tf.config.experimental.list_physical_devices('GPU')
         print("physical_devices-------------", len(physical_devices))
         tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
-    def predict(self, dataX=[1, 2, 3], dataY=[1, 4, 9], pastPointsNumber = 2):
-        # generate 2d classification dataset
-        X, y = make_blobs(n_samples=100, centers=2, n_features=2, random_state=1)
-        scalar = MinMaxScaler()
-        scalar.fit(X)
-        X = scalar.transform(X)
-        # define and fit the final model
-        model = Sequential()
-        model.add(Dense(4, input_dim=2, activation='relu'))
-        model.add(Dense(4, activation='relu'))
-        model.add(Dense(1, activation='sigmoid'))
-        model.compile(loss='binary_crossentropy', optimizer='adam')
-        model.fit(X, y, epochs=500, verbose=0)
-        # new instance where we do not know the answer
-        Xnew = array([[0.89337759, 0.65864154]])
-        # make a prediction
-        ynew = model.predict_classes(Xnew)
-        # shkeras_scratch_graphow the inputs and predicted outputs
-        print("X=%s, Predicted=%s" % (Xnew[0], ynew[0]))
+        self.env = gym.make('CartPole-v1')
 
-class DQN:
-    def __init__(self, env):
-        self.env = env
-        self.memory = deque(maxlen=2000)
+        states = self.env.observation_space.shape[0] #To get an idea about the number of variables affecting the environment
+        print('States', states)
 
-        self.gamma = 0.95
-        self.epsilon = 1.0
-        self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995
-        self.learning_rate = 0.01
+        actions = self.env.action_space.n # To get an idea about the number of possible actions in the environment, do [right,left]
+        print('Actions', actions)
 
+        # episodes = 10
+        # for episode in range(1, episodes + 1):
+        #     # At each begining reset the game
+        #     state = self.env.reset()
+        #     # set done to False
+        #     done = False
+        #     # set score to 0
+        #     score = 0
+        #     # while the game is not finished
+        #     while not done:
+        #         # visualize each step
+        #         self.env.render()
+        #         # choose a random action
+        #         action = random.choice([0, 1])
+        #         # execute the action
+        #         n_state, reward, done, info = self.env.step(action)
+        #         # keep track of rewards
+        #         score += reward
+        #     print('episode {} score {}'.format(episode, score))
 
-def create_model(self):
-    model = Sequential()
-    state_shape = self.env.observation_space.shape
-    model.add(Dense(24, input_dim=state_shape[0],
-                    activation="relu"))
-    model.add(Dense(48, activation="relu"))
-    model.add(Dense(24, activation="relu"))
-    model.add(Dense(self.env.action_space.n))
-    model.compile(loss="mean_squared_error",
-                  optimizer=Adam(lr=self.learning_rate))
-    return model
+        self.model = self.agent(self.env.observation_space.shape[0], self.env.action_space.n)
 
-    def remember(self, state, action, reward, new_state, done):
-        self.memory.append([state, action, reward, new_state, done])
+        self.policy = EpsGreedyQPolicy()
+        # TODO create env for dobot
 
-    def remember(self, state, action, reward, new_state, done):
-        self.memory.append([state, action, reward, new_state, done])
+        self.sarsa = SARSAAgent(model=self.model, policy=self.policy, nb_actions=self.env.action_space.n)
 
-    def target_train(self):
-        weights = self.model.get_weights()
-        target_weights = self.target_model.get_weights()
-        for i in range(len(target_weights)):
-            target_weights[i] = weights[i]
-        self.target_model.set_weights(target_weights)
+    def agent(self, states, actions):
+        n_steps_in = 5
+        n_features = 24
+        self.model = Sequential()
+        #model.add(Flatten(input_shape=(1, states)))
+        self.model.add(LSTM(4, activation='relu',input_shape=(1, 4))) #, stateful=False states are resetted together after each batch.
+        self.model.add(Dense(24, activation='relu'))
+        self.model.add(Dense(24, activation='relu'))
+        self.model.add(Dense(24, activation='relu'))
+        self.model.add(Dense(actions, activation='linear'))
+        #model.reset_states()
+        return self.model
 
-    def act(self, state):
-        self.epsilon *= self.epsilon_decay
-        self.epsilon = max(self.epsilon_min, self.epsilon)
-        if np.random.random() < self.epsilon:
-            return self.env.action_space.sample()
-        return np.argmax(self.model.predict(state)[0])
+    def load(self):
+        self.sarsa.compile('adam', metrics=['mse'])
+        self.sarsa.load_weights('sarsa_weights.h5f')
+        self.sarsa.compile('adam', metrics=['mse'])
+
+    def test(self,nb_episodes=2):
+        _ = self.sarsa.test(self.env, nb_episodes = nb_episodes, visualize=True)
+
+    def fit(self,visualize = False):
+        self.sarsa.compile('adam', metrics=['mse'])
+        self.sarsa.fit(self.env, nb_steps=50000, visualize=visualize, verbose=1, nb_max_start_steps  = 1, start_step_policy = self.model.reset_states)
+
+        scores = self.sarsa.test(self.env, nb_episodes=100, visualize=visualize)
+        print('Average score over 100 test games:{}'.format(np.mean(scores.history['episode_reward'])))
+
+        self.sarsa.save_weights('sarsa_weights.h5f', overwrite=True)
+
+    # https://medium.com/@abhishek.bn93/using-keras-reinforcement-learning-api-with-openai-gym-6c2a35036c83
