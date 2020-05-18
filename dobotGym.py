@@ -19,7 +19,7 @@ class dobotGym(gym.Env):
         # coordinateOperationInstance.neuralNetworkPredictionInstance.predict()
         # coordinateOperationInstance.loadDataWithLearning() #loading data ============================
 
-        self.coordinateOperationInstance.runRawDriver()
+        #self.coordinateOperationInstance.runRawDriver()
         # coordinateOperationInstance.runCloserToPosition(30)
         #coordinateOperationInstance.runPolynomialPrediction(backPoints=10, deg=5)
         self.gravity = 9.8
