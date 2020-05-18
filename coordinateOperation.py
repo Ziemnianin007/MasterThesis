@@ -15,7 +15,7 @@ class coordinateOperation:
 
         self.dobotHandlerInstance = dobotHandler.dobotHandler()
         self.oculusQuestConnectionInstance = oculusQuestConnection.oculusQuestConnection()
-
+        self.minZ = -115
         self.recording = False
 
         self.rightXLastDobot = 0
@@ -153,8 +153,8 @@ class coordinateOperation:
         self.dobotX = self.oculusX
         self.dobotY = self.oculusY
         self.dobotZ = self.oculusZ
-        if self.dobotZ < -30:    #avoid ground contact
-            self.dobotZ = -30
+        if self.dobotZ < self.minZ:    #avoid ground contact
+            self.dobotZ = self.minZ
         self.rightXLastDobot = self.rightX
         self.rightYLastDobot = self.rightY
         self.rightZLastDobot = self.rightZ
@@ -165,16 +165,16 @@ class coordinateOperation:
         self.homeZ = self.homeZ + (self.rightZ - self.rightZLastDobot)
 
     def moveDobotToPreparedPosition(self):
-        if self.dobotZ < -30:    #avoid ground contact
-            self.dobotZ = -30
+        if self.dobotZ < self.minZ:    #avoid ground contact
+            self.dobotZ = self.minZ
         dobotX, dobotY, dobotZ = self.dobotX, self.dobotY, self.dobotZ
         self.dobotPositionTimeStamp = self.dobotHandlerInstance.setPosition(self.dobotX, self.dobotY, self.dobotZ)
         self.postionArrayAddDobotAndOculusPositions(dobotX, dobotY, dobotZ)
         print("X: %0.3f " % self.rightX, "Y: %0.3f " % self.rightY, "Z: %0.3f " % self.rightZ, " grip: ", self.grip, "| dX: %0.3f " % self.dobotX, "dY: %0.3f " % self.dobotY, "dZ: %0.3f " % self.dobotZ)
 
     def moveDobotCloserToPreparedPosition(self,maxMove = 30):
-        if self.dobotZ < -30:    #avoid ground contact
-            self.dobotZ = -30
+        if self.dobotZ < self.minZ:    #avoid ground contact
+            self.dobotZ = self.minZ
         dobotX, dobotY, dobotZ = self.dobotX, self.dobotY, self.dobotZ
         self.dobotPositionTimeStamp =self.dobotHandlerInstance.closerToPosition(self.dobotX, self.dobotY, self.dobotZ, maxMove)
         self.postionArrayAddDobotAndOculusPositions(dobotX, dobotY, dobotZ)
