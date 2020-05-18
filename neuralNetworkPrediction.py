@@ -82,7 +82,7 @@ class DQN:
 
     def fit(self,visualize = False):
         self.sarsa.compile('adam', metrics=['mse'])
-        self.sarsa.fit(self.env, nb_steps=50000, visualize=visualize, verbose=1, nb_max_start_steps  = 1, start_step_policy = self.model.reset_states)
+        self.sarsa.fit(self.env, nb_steps=50000, visualize=visualize, verbose=0, nb_max_start_steps  = 1, start_step_policy = self.model.reset_states)
 
         scores = self.sarsa.test(self.env, nb_episodes=100, visualize=visualize)
         print('Average score over 100 test games:{}'.format(np.mean(scores.history['episode_reward'])))

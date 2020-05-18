@@ -23,8 +23,8 @@ import neuralNetworkPrediction
 
 neuralNetworkPredictionInstance = neuralNetworkPrediction.DQN()
 #neuralNetworkPredictionInstance.load()
-neuralNetworkPredictionInstance.fit(True)
-neuralNetworkPredictionInstance.test()
+neuralNetworkPredictionInstance.fit(False)
+neuralNetworkPredictionInstance.test(15)
 
 
 
