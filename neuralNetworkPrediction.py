@@ -59,7 +59,7 @@ class DQN:
         self.model = self.agent(self.env.observation_space.shape[0], self.shape)
 
         self.policy = EpsGreedyQPolicy()
-        # TODO create env for dobot
+        # TODO agent type: DDPGAgent in continues mode
 
         self.sarsa = SARSAAgent(model=self.model, policy=self.policy, nb_actions=self.shape)
 
