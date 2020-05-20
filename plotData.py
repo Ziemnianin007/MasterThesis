@@ -121,15 +121,15 @@ class plotData:
 
         self.predicted3D.plot(plotData['predictionX'],plotData['predictionY'],plotData['predictionZ'],color = 'r')
 
-        self.currentX.set_title('Current X')
-        self.currentY.set_title('Current Y')
-        self.currentZ.set_title('Current Z')
+        self.currentX.set_title('Axis X')
+        self.currentY.set_title('Axis Y')
+        self.currentZ.set_title('Axis Z')
 
         self.diffX.set_title('Diff X')
         self.diffY.set_title('Diff Y')
         self.diffZ.set_title('Diff Z')
 
-        self.current3D.set_title('Current 3D')
+        self.current3D.set_title('Axis XYZ 3D')
         self.diff3D.set_title('Diff 3D')
         self.predicted3D.set_title('Prediction 3D')
 

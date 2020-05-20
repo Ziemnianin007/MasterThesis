@@ -9,19 +9,14 @@ import fileOperation
 class dobotGym(gym.Env):
     def __init__(self):
         self.coordinateOperationInstance = coordinateOperation.coordinateOperation(plot=False, save=True)
+        self.coordinateOperationInstance.recording = False
 
-
-        self.path = fileOperation.saveToFolder(self.positionArray, name='movePathSave')
-        self.dobotHome()  # dobot goes to home position
-        # self.oculusHomePosition()  # oculus homing operation
-        self.oculusQuestConnectionInstance.resetZero()  # sets coordinates system axis angle correctly
-        self.rebaseOculusToDobotCoordinates()  # home actual position, avoid rapid arm moves
-        self.recording = True
+        self.coordinateOperationInstance.preparationForMoving()
         while(1):
             self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
-            self.moveDobotToPreparedPosition()  #move dobot to position
-        self.recording = False
-
+            self.coordinateOperationInstance.setDobotPositionToMove(X,Y,Z)
+            self.coordinateOperationInstance.moveDobotToPreparedPosition()
+        self.coordinateOperationInstance.endOfMoving()
 
         # Angle at which to fail the episode
 
