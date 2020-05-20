@@ -16,6 +16,7 @@ from keras.optimizers import Adam
 from keras.layers import LSTM
 from rl.agents import SARSAAgent
 from rl.policy import EpsGreedyQPolicy
+import dobotGym
 
 class DQN:
     def __init__(self):
@@ -24,13 +25,16 @@ class DQN:
         print("physical_devices-------------", len(physical_devices))
         tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
-        self.env = gym.make('CartPole-v1')
+        #self.env = gym.make('CartPole-v1')
+        self.env = dobotGym.dobotGym()
 
-        states = self.env.observation_space.shape[0] #To get an idea about the number of variables affecting the environment
+        #shape = self.env.observation_space.n
+        self.shape = self.env.observation_space.shape[0]
+        states = self.shape #To get an idea about the number of variables affecting the environment
         print('States', states)
 
-        actions = self.env.action_space.n # To get an idea about the number of possible actions in the environment, do [right,left]
-        print('Actions', actions)
+        #actions = self.env.action_space.n # To get an idea about the number of possible actions in the environment, do [right,left]
+        #print('Actions', actions)
 
         # episodes = 10
         # for episode in range(1, episodes + 1):
@@ -52,19 +56,19 @@ class DQN:
         #         score += reward
         #     print('episode {} score {}'.format(episode, score))
 
-        self.model = self.agent(self.env.observation_space.shape[0], self.env.action_space.n)
+        self.model = self.agent(self.env.observation_space.shape[0], self.shape)
 
         self.policy = EpsGreedyQPolicy()
         # TODO create env for dobot
 
-        self.sarsa = SARSAAgent(model=self.model, policy=self.policy, nb_actions=self.env.action_space.n)
+        self.sarsa = SARSAAgent(model=self.model, policy=self.policy, nb_actions=self.shape)
 
     def agent(self, states, actions):
         n_steps_in = 5
         n_features = 24
         self.model = Sequential()
         #model.add(Flatten(input_shape=(1, states)))
-        self.model.add(LSTM(4, activation='relu',input_shape=(1, 4))) #, stateful=False states are resetted together after each batch.
+        self.model.add(LSTM(4, activation='relu',input_shape=(1, self.shape))) #, stateful=False states are resetted together after each batch.
         self.model.add(Dense(24, activation='relu'))
         self.model.add(Dense(24, activation='relu'))
         self.model.add(Dense(24, activation='relu'))
@@ -88,5 +92,14 @@ class DQN:
         print('Average score over 100 test games:{}'.format(np.mean(scores.history['episode_reward'])))
 
         self.sarsa.save_weights('sarsa_weights.h5f', overwrite=True)
+
+    def fitDobot(self,visualize = False):
+        self.sarsa.compile('adam', metrics=['mse'])
+        self.sarsa.fit(self.env, nb_steps=50000, visualize=visualize, verbose=1, nb_max_start_steps  = 1, start_step_policy = self.model.reset_states)
+
+        scores = self.sarsa.test(self.env, nb_episodes=100, visualize=visualize)
+        print('Average score over 100 test games:{}'.format(np.mean(scores.history['episode_reward'])))
+
+        self.sarsa.save_weights('sarsa_weights_dobot.h5f', overwrite=True)
 
     # https://medium.com/@abhishek.bn93/using-keras-reinforcement-learning-api-with-openai-gym-6c2a35036c83
