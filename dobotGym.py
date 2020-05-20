@@ -7,21 +7,21 @@ import coordinateOperation
 import fileOperation
 
 class dobotGym(gym.Env):
-    def __init__(self):
-        self.coordinateOperationInstance = coordinateOperation.coordinateOperation(plot=False, save=True)
+    def __init__(self, plot = False, save= True):
+        self.coordinateOperationInstance = coordinateOperation.coordinateOperation(plot, save)
         self.coordinateOperationInstance.recording = False
-
-        self.coordinateOperationInstance.preparationForMoving()
-        while(1):
-            self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
-            self.coordinateOperationInstance.setDobotPositionToMove(X,Y,Z)
-            self.coordinateOperationInstance.moveDobotToPreparedPosition()
-        self.coordinateOperationInstance.endOfMoving()
 
         # Angle at which to fail the episode
 
         # Angle limit set to 2 * theta_threshold_radians so failing observation
         # is still within bounds.
+        maxStep = 150
+        self.action_space = spaces.Box(np.array(-maxStep,maxStep),
+                                       np.array(-maxStep,maxStep),
+                                       np.array(-maxStep,maxStep),dtype=np.float32)
+        self.observation_space = spaces.Box(np.array([self.coordinateOperationInstance.minX,self.coordinateOperationInstance.maxX]),
+                                       np.array([self.coordinateOperationInstance.minY,self.coordinateOperationInstance.maxY]),
+                                       np.array([self.coordinateOperationInstance.minZ,self.coordinateOperationInstance.maxZ]),dtype=np.float32)
 
         self.viewer = None
         self.state = None
@@ -29,60 +29,30 @@ class dobotGym(gym.Env):
         self.steps_beyond_done = None
 
     def step(self, action):
+        self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
+        self.coordinateOperationInstance.setDiffPositionToMove(action[0],action[1],action[2])
+        self.state = self.coordinateOperationInstance.moveDobotToPreparedPosition()
 
+        reward = 1/(self.coordinateOperationInstance.actualDiffXYZ+1)
 
-        x, x_dot, theta, theta_dot = self.state
-        force = self.force_mag if action == 1 else -self.force_mag
-        costheta = math.cos(theta)
-        sintheta = math.sin(theta)
-
-        # For the interested reader:
-        # https://coneural.org/florian/papers/05_cart_pole.pdf
-        temp = (force + self.polemass_length * theta_dot ** 2 * sintheta) / self.total_mass
-        thetaacc = (self.gravity * sintheta - costheta * temp) / (self.length * (4.0 / 3.0 - self.masspole * costheta ** 2 / self.total_mass))
-        xacc = temp - self.polemass_length * thetaacc * costheta / self.total_mass
-
-        if self.kinematics_integrator == 'euler':
-            x = x + self.tau * x_dot
-            x_dot = x_dot + self.tau * xacc
-            theta = theta + self.tau * theta_dot
-            theta_dot = theta_dot + self.tau * thetaacc
-        else:  # semi-implicit euler
-            x_dot = x_dot + self.tau * xacc
-            x = x + self.tau * x_dot
-            theta_dot = theta_dot + self.tau * thetaacc
-            theta = theta + self.tau * theta_dot
-
-        self.state = (x, x_dot, theta, theta_dot)
-
-        done = bool(
-            x < -self.x_threshold
-            or x > self.x_threshold
-            or theta < -self.theta_threshold_radians
-            or theta > self.theta_threshold_radians
-        )
-
-        if not done:
-            reward = 1.0
-        elif self.steps_beyond_done is None:
-            # Pole just fell!
-            self.steps_beyond_done = 0
-            reward = 1.0
+        if self.grip is False:
+            done = False
         else:
-            if self.steps_beyond_done == 0:
-                pass
-            self.steps_beyond_done += 1
-            reward = 0.0
+            done = True
 
-        return np.array(self.state), reward, done, {}
+        info = {
+            'Diff': self.coordinateOperationInstance.actualDiffXYZ,
+        }
+
+        return np.array(self.state), reward, done, info
 
     def reset(self):
-        self.state = self.np_random.uniform(low=-0.05, high=0.05, size=(4,))
-        self.steps_beyond_done = None
+        self.coordinateOperationInstance.preparationForMoving()
+        self.state = np.array([self.coordinateOperationInstance.rightXLastDobot,self.coordinateOperationInstance.rightYLastDobot,self.coordinateOperationInstance.rightZLastDobot])
+        while(self.grip is False):
+            pass
         return np.array(self.state)
 
 
     def close(self):
-        if self.viewer:
-            self.viewer.close()
-            self.viewer = None
+        self.coordinateOperationInstance.endOfMoving()

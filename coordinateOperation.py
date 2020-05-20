@@ -14,9 +14,15 @@ class coordinateOperation:
     def __init__(self, graphDataLength = 50, plot = True, save = True):
         #home dobot magician in dobotstudio, then disconnect and run
 
-        self.dobotHandlerInstance = dobotHandler.dobotHandler()
         self.oculusQuestConnectionInstance = oculusQuestConnection.oculusQuestConnection()
+        self.dobotHandlerInstance = dobotHandler.dobotHandler()
+
+        self.minX = -135
+        self.maxX = 328
+        self.minY = -328
+        self.maxY = 328
         self.minZ = -115
+        self.maxZ = 160
         self.recording = False
 
         self.rightXLastDobot = 0
@@ -48,6 +54,8 @@ class coordinateOperation:
         self.positionArray['oculusYSynchronized'] = []
         self.positionArray['oculusZSynchronized'] = []
 
+        self.actualDiffXYZ = 0
+
         self.grip = False
         self.oldGrip = False
         self.actualPositionOculus = None
@@ -66,10 +74,7 @@ class coordinateOperation:
 
         #self.neuralNetworkPredictionInstance = neuralNetworkPrediction.neuralNetworkPrediction()
 
-    #x Min -135  Max 328    av 96.5     +- 231.5
-    #y Min -328 Max 328     av 0        +- 328
-    #z Min -30 Max 160      av 65       +- 95
-    #R Min -150 Max 150     av 0        +- 150
+
 
     """
     #position, rotation, velocity, angular velocity
@@ -91,6 +96,8 @@ class coordinateOperation:
             self.getActualPosition()
             self.coordinateFromOculusToDobotTranslation()
 
+
+
             if self.recording is True:
                 self.positionArray['oculusX'].append(self.oculusX)
                 self.positionArray['oculusY'].append(self.oculusY)
@@ -100,7 +107,6 @@ class coordinateOperation:
 
 
             #print(self.actualPositionOculus)
-
     def oculusHomePosition(self):
         homePosition = self.actualPositionOculus
         self.homeX = homePosition[0][3]
@@ -121,7 +127,7 @@ class coordinateOperation:
     #     homePosition[1][3] = homePosition[1][3] - (z - oldPosition[2]) # +0.5 -0.1
 
     def dobotHome(self):
-        self.dobotHandlerInstance.setPosition(259.1198, 0, -8.5687) #going to dobot home
+        self.dobotHandlerInstance.setPosition(259.1198, 0, -8.5687, wait = True) #going to dobot home
         self.rightXLastDobot = 0
         self.rightYLastDobot = 0
         self.rightZLastDobot = 0
@@ -153,6 +159,10 @@ class coordinateOperation:
 
     def coordinateFromOculusToDobotTranslation(self):
 
+        # x Min -135  Max 328    av 96.5     +- 231.5
+        # y Min -328 Max 328     av 0        +- 328
+        # z Min -30 Max 160      av 65       +- 95
+        # R Min -150 Max 150     av 0        +- 150
         #self.dobotX = -self.rightY / 0.25 * 231.5 + 259.1198
         #self.dobotY = -self.rightX / 0.25 * 328 + 0
         #self.dobotZ = self.rightZ / 0.25 * 150 + 0 - 8.5687
@@ -164,6 +174,26 @@ class coordinateOperation:
         self.dobotZ = self.oculusZ
         if self.dobotZ < self.minZ:    #avoid ground contact
             self.dobotZ = self.minZ
+
+        if  self.dobotX < self.minX:
+            self.dobotX = self.minX
+        if  self.dobotX > self.maxX:
+            self.dobotX = self.maxX
+
+        if  self.dobotY < self.minY:
+            self.dobotY = self.minY
+        if  self.dobotY > self.maxY:
+            self.dobotY = self.maxY
+
+        if  self.dobotZ < self.minZ:
+            self.dobotZ = self.minZ
+        if  self.dobotZ > self.maxZ:
+            self.dobotZ = self.maxZ
+
+        self.oculusX = self.dobotX
+        self.oculusY = self.dobotY
+        self.oculusZ = self.dobotZ
+
         self.rightXLastDobot = self.rightX
         self.rightYLastDobot = self.rightY
         self.rightZLastDobot = self.rightZ
@@ -176,16 +206,19 @@ class coordinateOperation:
     def setDobotPositionToMove(self, dobotX, dobotY, dobotZ):
         self.dobotX, self.dobotY, self.dobotZ = dobotX, dobotY, dobotZ
 
+    def setDiffPositionToMove(self, diffX, diffY, diffZ):
+        self.dobotX, self.dobotY, self.dobotZ = self.rightXLastDobot + diffX, self.rightYLastDobot + diffY, self.rightZLastDobot + diffZ
+
     def moveDobotToPreparedPosition(self):
         if self.dobotZ < self.minZ:    #avoid ground contact
             self.dobotZ = self.minZ
         dobotX, dobotY, dobotZ = self.dobotX, self.dobotY, self.dobotZ
         self.dobotPositionTimeStamp = self.dobotHandlerInstance.setPosition(self.dobotX, self.dobotY, self.dobotZ)
         self.postionArrayAddDobotAndOculusPositions(dobotX, dobotY, dobotZ)
-
         print("X: %0.3f " % self.rightX, "Y: %0.3f " % self.rightY, "Z: %0.3f " % self.rightZ, " g: ", self.grip,
               " Prediction X: %0.3f " % self.positionArray['predictionX'][-1], "Y: %0.3f " % self.positionArray['predictionY'][-1], "Z: %0.3f " % self.positionArray['predictionZ'][-1],
               " Now: X: %0.3f " % self.positionArray['dobotX'][-1], "Y: %0.3f " % self.positionArray['dobotY'][-1], "Z: %0.3f " % self.positionArray['dobotZ'][-1])
+        return [self.dobotPositionTimeStamp[0][0], self.dobotPositionTimeStamp[0][1], self.dobotPositionTimeStamp[0][2]]
 
     def moveDobotCloserToPreparedPosition(self,maxMove = 30):
         if self.dobotZ < self.minZ:    #avoid ground contact
@@ -213,6 +246,8 @@ class coordinateOperation:
         self.positionArray['diffZ'].append(self.positionArray['oculusZ'][-1] - self.positionArray['dobotZ'][-1])
 
         diffShortestWay = math.sqrt(self.positionArray['diffX'][-1]**2 + self.positionArray['diffY'][-1]**2 + self.positionArray['diffZ'][-1]**2)
+
+        self.actualDiffXYZ = diffShortestWay
 
         self.positionArray['diffXYZ'].append(diffShortestWay)
 
