@@ -62,6 +62,13 @@ class plotData:
         self.currentY.legend(['ARM','VR','PRE'],prop={"size":6})
         self.currentZ.legend(['ARM','VR','PRE'],prop={"size":6})
 
+        self.diffX.legend(["X",'|XYZ|'],prop={"size":6})
+        self.diffY.legend(["Y",'|XYZ|'],prop={"size":6})
+        self.diffZ.legend(["Z",'|XYZ|'],prop={"size":6})
+        self.diffX.axhline(color='grey', linestyle='--', lw=0.5)
+        self.diffY.axhline(color='grey', linestyle='--', lw=0.5)
+        self.diffZ.axhline(color='grey', linestyle='--', lw=0.5)
+
         self.current3D.legend(['ARM','VR'],prop={"size":6})
 
         self.current3D.set_xlabel('[mm]')
@@ -104,12 +111,14 @@ class plotData:
         self.currentY.plot(plotData['timestamp'],plotData['dobotY'],plotData['oculusTimeStamp'],plotData['oculusY'],plotData['timestamp'],plotData['predictionY'])
         self.currentZ.plot(plotData['timestamp'],plotData['dobotZ'],plotData['oculusTimeStamp'],plotData['oculusZ'],plotData['timestamp'],plotData['predictionZ'])
 
-        self.diffX.plot(plotData['timestamp'],plotData['diffX'],color = 'g')
-        self.diffY.plot(plotData['timestamp'],plotData['diffY'],color = 'g')
-        self.diffZ.plot(plotData['timestamp'],plotData['diffZ'],color = 'g')
+        self.diffX.plot(plotData['timestamp'],plotData['diffX'],'g', plotData['timestamp'],plotData['diffXYZ'], "y")
+        self.diffY.plot(plotData['timestamp'],plotData['diffY'],'g', plotData['timestamp'],plotData['diffXYZ'], "y")
+        self.diffZ.plot(plotData['timestamp'],plotData['diffZ'],'g', plotData['timestamp'],plotData['diffXYZ'], "y")
 
         self.current3D.plot(plotData['dobotX'],plotData['dobotY'],plotData['dobotZ'],plotData['oculusXSynchronized'],plotData['oculusYSynchronized'],plotData['oculusZSynchronized'])
         self.diff3D.plot(plotData['diffX'],plotData['diffY'],plotData['diffZ'],color = 'g')
+        self.diff3D.plot([0], [0], [0], markerfacecolor='k', markeredgecolor='k', marker='o', markersize=6, alpha=0.6)
+
         self.predicted3D.plot(plotData['predictionX'],plotData['predictionY'],plotData['predictionZ'],color = 'r')
 
         self.currentX.set_title('Current X')

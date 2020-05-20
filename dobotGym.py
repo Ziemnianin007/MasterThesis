@@ -4,36 +4,26 @@ import gym
 from gym import spaces
 import numpy as np
 import coordinateOperation
+import fileOperation
 
 class dobotGym(gym.Env):
-
-
-    metadata = {
-        'render.modes': ['human', 'rgb_array'],
-        'video.frames_per_second': 50
-    }
-
     def __init__(self):
-        self.coordinateOperationInstance = coordinateOperation.coordinateOperation(plot=False, save=False)
+        self.coordinateOperationInstance = coordinateOperation.coordinateOperation(plot=False, save=True)
 
-        # coordinateOperationInstance.neuralNetworkPredictionInstance.predict()
-        # coordinateOperationInstance.loadDataWithLearning() #loading data ============================
 
-        #self.coordinateOperationInstance.runRawDriver()
-        # coordinateOperationInstance.runCloserToPosition(30)
-        #coordinateOperationInstance.runPolynomialPrediction(backPoints=10, deg=5)
-        self.gravity = 9.8
-        self.masscart = 1.0
-        self.masspole = 0.1
-        self.total_mass = (self.masspole + self.masscart)
-        self.length = 0.5  # actually half the pole's length
-        self.polemass_length = (self.masspole * self.length)
-        self.force_mag = 10.0
-        self.tau = 0.02  # seconds between state updates
-        self.kinematics_integrator = 'euler'
+        self.path = fileOperation.saveToFolder(self.positionArray, name='movePathSave')
+        self.dobotHome()  # dobot goes to home position
+        # self.oculusHomePosition()  # oculus homing operation
+        self.oculusQuestConnectionInstance.resetZero()  # sets coordinates system axis angle correctly
+        self.rebaseOculusToDobotCoordinates()  # home actual position, avoid rapid arm moves
+        self.recording = True
+        while(1):
+            self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
+            self.moveDobotToPreparedPosition()  #move dobot to position
+        self.recording = False
+
 
         # Angle at which to fail the episode
-        self.theta_threshold_radians = 12 * 2 * math.pi / 360
 
         # Angle limit set to 2 * theta_threshold_radians so failing observation
         # is still within bounds.

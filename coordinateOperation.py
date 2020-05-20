@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import time
 import threading
 import neuralNetworkPrediction
+import math
 
 class coordinateOperation:
     def __init__(self, graphDataLength = 50, plot = True, save = True):
@@ -33,6 +34,8 @@ class coordinateOperation:
         self.positionArray['diffX'] = []
         self.positionArray['diffY'] = []
         self.positionArray['diffZ'] = []
+
+        self.positionArray['diffXYZ'] = []
 
         self.positionArray['predictionX'] = []
         self.positionArray['predictionY'] = []
@@ -135,6 +138,8 @@ class coordinateOperation:
         self.positionArray['diffY'] = []
         self.positionArray['diffZ'] = []
 
+        self.positionArray['diffXYZ'] = []
+
         self.positionArray['predictionX'] = []
         self.positionArray['predictionY'] = []
         self.positionArray['predictionZ'] = []
@@ -203,6 +208,10 @@ class coordinateOperation:
         self.positionArray['diffX'].append(self.positionArray['oculusX'][-1] - self.positionArray['dobotX'][-1])
         self.positionArray['diffY'].append(self.positionArray['oculusY'][-1] - self.positionArray['dobotY'][-1])
         self.positionArray['diffZ'].append(self.positionArray['oculusZ'][-1] - self.positionArray['dobotZ'][-1])
+
+        diffShortestWay = math.sqrt(self.positionArray['diffX'][-1]**2 + self.positionArray['diffY'][-1]**2 + self.positionArray['diffZ'][-1]**2)
+
+        self.positionArray['diffXYZ'].append(diffShortestWay)
 
         self.positionArray['timestamp'].append(self.dobotPositionTimeStamp[1])
 

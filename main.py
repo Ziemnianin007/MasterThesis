@@ -12,19 +12,19 @@ import coordinateOperation
 
 import neuralNetworkPrediction
 
-#coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = False, save = False)
+coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = True, save = True)
 
 #coordinateOperationInstance.neuralNetworkPredictionInstance.predict()
 #coordinateOperationInstance.loadDataWithLearning() #loading data ============================
 
-#coordinateOperationInstance.runRawDriver()
+coordinateOperationInstance.runRawDriver()
 #coordinateOperationInstance.runCloserToPosition(30)
 #coordinateOperationInstance.runPolynomialPrediction(backPoints=10,deg=5)
 
-neuralNetworkPredictionInstance = neuralNetworkPrediction.DQN()
-neuralNetworkPredictionInstance.load()
+#neuralNetworkPredictionInstance = neuralNetworkPrediction.DQN()
+#neuralNetworkPredictionInstance.load()
 #neuralNetworkPredictionInstance.fit(True)
-neuralNetworkPredictionInstance.test(15)
+#neuralNetworkPredictionInstance.test(15)
 
 
 
