@@ -14,22 +14,22 @@ import neuralNetworkPrediction
 
 #coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = True, save = True)
 
-#coordinateOperationInstance.neuralNetworkPredictionInstance.predict()
-#coordinateOperationInstance.loadDataWithLearning() #loading data ============================
-
 #coordinateOperationInstance.runRawDriver()
 #coordinateOperationInstance.runCloserToPosition(30)
 #coordinateOperationInstance.runPolynomialPrediction(backPoints=10,deg=5)
 
-neuralNetworkPredictionInstance = neuralNetworkPrediction.DQN()
+#neuralNetworkPredictionInstance = neuralNetworkPrediction.DQN("Dobot")
+neuralNetworkPredictionInstance = neuralNetworkPrediction.DQN("Dobot")
 #neuralNetworkPredictionInstance.load()
 #neuralNetworkPredictionInstance.fit(True)
+neuralNetworkPredictionInstance.fit(False)
 #neuralNetworkPredictionInstance.test(15)
 
-neuralNetworkPredictionInstance.fitDobot(False)
 
 
+#tensorboard --logdir .\logs\CartPoleV1
 
+#tensorboard --logdir .\logs\Dobot
 
 
 

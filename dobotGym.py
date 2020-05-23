@@ -8,7 +8,7 @@ import fileOperation
 
 class dobotGym(gym.Env):
     def __init__(self, plot = False, save= True):
-        self.coordinateOperationInstance = coordinateOperation.coordinateOperation(plot, save)
+        self.coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = plot, save = save)
         self.coordinateOperationInstance.recording = False
 
         # Angle at which to fail the episode
@@ -31,6 +31,9 @@ class dobotGym(gym.Env):
 
         self.steps_beyond_done = None
 
+        self.episodeLength = 15
+        self.episodeStep = 0
+
     def step(self, action):
         print("Action", action, self.action_space.low, self.action_space.high)
         action = np.clip(action, self.action_space.low, self.action_space.high)
@@ -46,13 +49,17 @@ class dobotGym(gym.Env):
         else:
             done = True
 
+        if (self.episodeStep > self.episodeLength):
+            done = True
+
         info = {
             'Diff': self.coordinateOperationInstance.actualDiffXYZ,
         }
-
+        self.episodeStep += 1
         return np.array(self.state), reward, done, info
 
     def reset(self):
+        self.episodeStep = 0
         self.coordinateOperationInstance.preparationForMoving()
         self.state = np.array([self.coordinateOperationInstance.rightXLastDobot,self.coordinateOperationInstance.rightYLastDobot,self.coordinateOperationInstance.rightZLastDobot])
         while(self.coordinateOperationInstance.grip is False):
