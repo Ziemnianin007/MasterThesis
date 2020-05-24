@@ -18,8 +18,8 @@ import neuralNetworkPrediction
 #coordinateOperationInstance.runCloserToPosition(30)
 #coordinateOperationInstance.runPolynomialPrediction(backPoints=10,deg=5)
 
-#neuralNetworkPredictionInstance = neuralNetworkPrediction.DQN("Dobot")
-neuralNetworkPredictionInstance = neuralNetworkPrediction.DQN("Dobot")
+neuralNetworkPredictionInstance = neuralNetworkPrediction.DQN("Dobot", emulateOculus = False)
+#neuralNetworkPredictionInstance = neuralNetworkPrediction.DQN("CartPole-v1")
 #neuralNetworkPredictionInstance.load()
 #neuralNetworkPredictionInstance.fit(True)
 neuralNetworkPredictionInstance.fit(False)

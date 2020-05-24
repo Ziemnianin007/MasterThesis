@@ -7,8 +7,8 @@ import coordinateOperation
 import fileOperation
 
 class dobotGym(gym.Env):
-    def __init__(self, plot = False, save= True):
-        self.coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = plot, save = save)
+    def __init__(self, plot = False, save= True, emulateOculus = True, episodeLength = 15):
+        self.coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = plot, save = save,emulateOculus = emulateOculus)
         self.coordinateOperationInstance.recording = False
 
         # Angle at which to fail the episode
@@ -31,7 +31,7 @@ class dobotGym(gym.Env):
 
         self.steps_beyond_done = None
 
-        self.episodeLength = 15
+        self.episodeLength = episodeLength -2
         self.episodeStep = 0
 
     def step(self, action):
@@ -43,7 +43,6 @@ class dobotGym(gym.Env):
         self.state = self.coordinateOperationInstance.moveDobotToPreparedPosition()
 
         reward = 1/(self.coordinateOperationInstance.actualDiffXYZ+1)
-
         if self.coordinateOperationInstance.grip is True:
             done = False
         else:
@@ -59,11 +58,13 @@ class dobotGym(gym.Env):
         return np.array(self.state), reward, done, info
 
     def reset(self):
+        self.coordinateOperationInstance.endOfMoving()
         self.episodeStep = 0
         self.coordinateOperationInstance.preparationForMoving()
         self.state = np.array([self.coordinateOperationInstance.rightXLastDobot,self.coordinateOperationInstance.rightYLastDobot,self.coordinateOperationInstance.rightZLastDobot])
         while(self.coordinateOperationInstance.grip is False):
             pass
+        self.coordinateOperationInstance.startRecording()
         return np.array(self.state)
 
 

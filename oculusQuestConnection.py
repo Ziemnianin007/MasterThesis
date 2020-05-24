@@ -5,11 +5,15 @@ import numpy
 import pprint
 
 class oculusQuestConnection:
-    def __init__(self):
-        openvr.init(openvr.VRApplication_Scene)
-        self.VRSystem = openvr.VRSystem()
-        self.VRSystem.resetSeatedZeroPose()
-        self.VRCompositor = openvr.VRCompositor()
+    def __init__(self, emulateOculus = True):
+
+        if emulateOculus is False:
+            openvr.init(openvr.VRApplication_Scene)
+            self.VRSystem = openvr.VRSystem()
+            self.VRSystem.resetSeatedZeroPose()
+            self.VRCompositor = openvr.VRCompositor()
+        #else:
+        self.emulateOculus = emulateOculus
 
 
     """

@@ -11,10 +11,10 @@ import neuralNetworkPrediction
 import math
 
 class coordinateOperation:
-    def __init__(self, graphDataLength = 50, plot = True, save = True):
+    def __init__(self, graphDataLength = 50, plot = True, save = True, emulateOculus = True):
         #home dobot magician in dobotstudio, then disconnect and run
 
-        self.oculusQuestConnectionInstance = oculusQuestConnection.oculusQuestConnection()
+        self.oculusQuestConnectionInstance = oculusQuestConnection.oculusQuestConnection(emulateOculus)
         self.dobotHandlerInstance = dobotHandler.dobotHandler()
 
         self.minX = -135
@@ -274,6 +274,8 @@ class coordinateOperation:
         self.oculusQuestConnectionInstance.resetZero()  # sets coordinates system axis angle correctly
         self.rebaseOculusToDobotCoordinates()  # home actual position, avoid rapid arm moves
         time.sleep(0.15)
+
+    def startRecording(self):
         self.recording = True
 
     def endOfMoving(self):
@@ -287,6 +289,7 @@ class coordinateOperation:
             if self.grip is True:   #grip is trigerred
                 if self.grip is not self.oldGrip:   #grip changed state, reseting relative coordinates
                     self.preparationForMoving()
+                    self.startRecording()
                 self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
                 self.moveDobotToPreparedPosition()  #move dobot to position
             else:
@@ -300,6 +303,7 @@ class coordinateOperation:
             if self.grip is True:   #grip is trigerred
                 if self.grip is not self.oldGrip:   #grip changed state, reseting relative coordinates
                     self.preparationForMoving()
+                    self.startRecording()
                 self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
                 self.moveDobotCloserToPreparedPosition(maxMove)  #move dobot closer to position
             else:
@@ -313,6 +317,7 @@ class coordinateOperation:
             if self.grip is True:   #grip is trigerred
                 if self.grip is not self.oldGrip:   #grip changed state, reseting relative coordinates
                     self.preparationForMoving()
+                    self.startRecording()
                 self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
                 if(len(self.positionArray['timestamp'])>0):
                     self.doPolynomialPrediction(backPoints, deg)
