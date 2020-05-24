@@ -119,12 +119,15 @@ class dobotGym(gym.Env):
 
     def reset(self):
         self.coordinateOperationInstance.endOfMoving()
-        self.episodeStep = 0
-        self.coordinateOperationInstance.preparationForMoving()
-        self.refreshState()
-        self.agentStepsNumberActual = 0
         while(self.coordinateOperationInstance.grip is False):
             pass
+        self.episodeStep = 0
+        self.coordinateOperationInstance.preparationForMoving()
+        self.agentStepsNumberActual = 0
+        self.agentPositionX = 0
+        self.agentPositionY = 0
+        self.agentPositionZ = 0
+        self.refreshState()
         self.coordinateOperationInstance.startRecording()
         return np.array(self.state)
 
