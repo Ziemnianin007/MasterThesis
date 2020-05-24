@@ -199,9 +199,11 @@ class coordinateOperation:
             self.dobotZ = self.maxZ
 
         R = math.sqrt(self.dobotX**2+self.dobotY**2)
+        if self.dobotY == 0:
+            self.dobotY = 0.001
         tg = self.dobotX/self.dobotY
         if R == 0:
-            R = 0.1
+            R = 0.001
         if(R<self.minR):
             self.dobotX = self.dobotX * self.minR / R
             self.dobotY = self.dobotY * self.minR / R
@@ -279,11 +281,10 @@ class coordinateOperation:
         #pprint.pprint(self.positionArray)
 
     def loadData(self):
-        self.positionArray = fileOperation.loadJson(fileName = "name",extension=".json")[0]
-        self.plotDataInstance.plot(self.positionArray, self.graphDataLength)
-        plt.show(block=True)
         while(True):
-            pass
+            self.positionArray = fileOperation.loadJson(fileName = "name",extension=".json")[0]
+            self.plotDataInstance.plot(self.positionArray, self.graphDataLength)
+            plt.show()
 
     def preparationForMoving(self):
         self.path = fileOperation.saveToFolder(self.positionArray, name='movePathSave')
