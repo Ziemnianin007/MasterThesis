@@ -17,6 +17,9 @@ class coordinateOperation:
         self.oculusQuestConnectionInstance = oculusQuestConnection.oculusQuestConnection(emulateOculus)
         self.dobotHandlerInstance = dobotHandler.dobotHandler()
 
+        self.maxR = 190
+        self.minR = 328
+
         self.minX = -135
         self.maxX = 328
         self.minY = -328
@@ -28,6 +31,11 @@ class coordinateOperation:
         self.rightXLastDobot = 0
         self.rightYLastDobot = 0
         self.rightZLastDobot = 0
+
+        self.dobotStartX = 259.1198
+        self.dobotStartY = 0
+        self.dobotStartZ = -8.5687
+
         self.positionArray = {}
         self.positionArray['oculusX'] = []
         self.positionArray['oculusY'] = []
@@ -127,7 +135,7 @@ class coordinateOperation:
     #     homePosition[1][3] = homePosition[1][3] - (z - oldPosition[2]) # +0.5 -0.1
 
     def dobotHome(self):
-        self.dobotHandlerInstance.setPosition(259.1198, 0, -8.5687, wait = True,joint= True) #going to dobot home
+        self.dobotHandlerInstance.setPosition(self.dobotStartX, self.dobotStartY, self.dobotStartZ, wait = True,joint= True) #going to dobot home
         self.rightXLastDobot = 0
         self.rightYLastDobot = 0
         self.rightZLastDobot = 0
@@ -166,7 +174,7 @@ class coordinateOperation:
         #self.dobotX = -self.rightY / 0.25 * 231.5 + 259.1198
         #self.dobotY = -self.rightX / 0.25 * 328 + 0
         #self.dobotZ = self.rightZ / 0.25 * 150 + 0 - 8.5687
-        self.oculusX = -self.rightY *1000 + 259.1198
+        self.oculusX = self.rightY *1000 + 259.1198
         self.oculusY = -self.rightX *1000 + 0
         self.oculusZ = self.rightZ *1000 + 0 - 8.5687
         self.dobotX = self.oculusX
@@ -190,6 +198,16 @@ class coordinateOperation:
         if  self.dobotZ > self.maxZ:
             self.dobotZ = self.maxZ
 
+        R = math.sqrt(self.dobotX**2+self.dobotY**2)
+        tg = self.dobotX/self.dobotY
+        if R == 0:
+            R = 0.1
+        if(R<self.minR):
+            self.dobotX = self.dobotX * self.minR / R
+            self.dobotY = self.dobotY * self.minR / R
+        if(R>self.maxR):
+            self.dobotX = self.dobotX * self.maxR / R
+            self.dobotY = self.dobotY * self.maxR / R
         self.oculusX = self.dobotX
         self.oculusY = self.dobotY
         self.oculusZ = self.dobotZ
@@ -273,6 +291,9 @@ class coordinateOperation:
         # self.oculusHomePosition()  # oculus homing operation
         self.oculusQuestConnectionInstance.resetZero()  # sets coordinates system axis angle correctly
         self.rebaseOculusToDobotCoordinates()  # home actual position, avoid rapid arm moves
+        self.rightXLastDobot = self.dobotStartX
+        self.rightYLastDobot = self.dobotStartY
+        self.rightZLastDobot = self.dobotStartZ
         time.sleep(0.15)
 
     def startRecording(self):

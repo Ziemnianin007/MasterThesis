@@ -55,7 +55,7 @@ class DQN:
         physical_devices = tf.config.experimental.list_physical_devices('GPU')
         print("physical_devices-------------", len(physical_devices))
         tf.config.experimental.set_memory_growth(physical_devices[0], True)
-        self.episodeLength = 15
+        self.episodeLength = 25
         if env == "CartPole-v1":
             self.env = gym.make('CartPole-v1')
             self.states = self.env.observation_space.shape[0]
