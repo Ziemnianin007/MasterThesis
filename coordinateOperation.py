@@ -127,7 +127,7 @@ class coordinateOperation:
     #     homePosition[1][3] = homePosition[1][3] - (z - oldPosition[2]) # +0.5 -0.1
 
     def dobotHome(self):
-        self.dobotHandlerInstance.setPosition(259.1198, 0, -8.5687, wait = True) #going to dobot home
+        self.dobotHandlerInstance.setPosition(259.1198, 0, -8.5687, wait = True,joint= True) #going to dobot home
         self.rightXLastDobot = 0
         self.rightYLastDobot = 0
         self.rightZLastDobot = 0
@@ -194,10 +194,6 @@ class coordinateOperation:
         self.oculusY = self.dobotY
         self.oculusZ = self.dobotZ
 
-        self.rightXLastDobot = self.rightX
-        self.rightYLastDobot = self.rightY
-        self.rightZLastDobot = self.rightZ
-
     def rebaseOculusToDobotCoordinates(self):
         self.homeX = self.homeX + (self.rightX - self.rightXLastDobot)
         self.homeY = self.homeY + (self.rightY - self.rightYLastDobot)
@@ -218,7 +214,7 @@ class coordinateOperation:
         print("X: %0.3f " % self.rightX, "Y: %0.3f " % self.rightY, "Z: %0.3f " % self.rightZ, " g: ", self.grip,
               " Prediction X: %0.3f " % self.positionArray['predictionX'][-1], "Y: %0.3f " % self.positionArray['predictionY'][-1], "Z: %0.3f " % self.positionArray['predictionZ'][-1],
               " Now: X: %0.3f " % self.positionArray['dobotX'][-1], "Y: %0.3f " % self.positionArray['dobotY'][-1], "Z: %0.3f " % self.positionArray['dobotZ'][-1])
-        return [self.dobotPositionTimeStamp[0][0], self.dobotPositionTimeStamp[0][1], self.dobotPositionTimeStamp[0][2]]
+        return [self.dobotPositionTimeStamp[0][0], self.dobotPositionTimeStamp[0][1], self.dobotPositionTimeStamp[0][2],self.oculusX,self.oculusY,self.oculusZ]
 
     def moveDobotCloserToPreparedPosition(self,maxMove = 30):
         if self.dobotZ < self.minZ:    #avoid ground contact
@@ -228,6 +224,10 @@ class coordinateOperation:
         self.postionArrayAddDobotAndOculusPositions(dobotX, dobotY, dobotZ)
 
     def postionArrayAddDobotAndOculusPositions(self, dobotX, dobotY, dobotZ):
+
+        self.rightXLastDobot = dobotX
+        self.rightYLastDobot = dobotY
+        self.rightZLastDobot = dobotZ
 
         self.positionArray['dobotX'].append(self.dobotPositionTimeStamp[0][0])
         self.positionArray['dobotY'].append(self.dobotPositionTimeStamp[0][1])

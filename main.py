@@ -12,15 +12,17 @@ import coordinateOperation
 
 import neuralNetworkPrediction
 
-#coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = True, save = True)
+coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = True, save = True, emulateOculus = False)
 
-#coordinateOperationInstance.runRawDriver()
+#coordinateOperationInstance.loadData()
+coordinateOperationInstance.runRawDriver()
 #coordinateOperationInstance.runCloserToPosition(30)
 #coordinateOperationInstance.runPolynomialPrediction(backPoints=10,deg=5)
+exit()
 
 neuralNetworkPredictionInstance = neuralNetworkPrediction.DQN("Dobot", emulateOculus = False)
 #neuralNetworkPredictionInstance = neuralNetworkPrediction.DQN("CartPole-v1")
-#neuralNetworkPredictionInstance.load()
+neuralNetworkPredictionInstance.load()
 #neuralNetworkPredictionInstance.fit(True)
 neuralNetworkPredictionInstance.fit(False)
 #neuralNetworkPredictionInstance.test(15)

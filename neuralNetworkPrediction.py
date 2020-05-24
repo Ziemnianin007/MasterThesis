@@ -137,9 +137,9 @@ class DQN:
         n_features = 24
         self.model = Sequential()
         #model.add(Flatten(input_shape=(1, states)))
-        self.model.add(LSTM(4, activation='relu',input_shape=(1, states))) #, stateful=False states are resetted together after each batch.
-        self.model.add(Dense(24, activation='relu'))
-        self.model.add(Dense(24, activation='relu'))
+        self.model.add(LSTM(24, activation='relu',input_shape=(1, states))) #, stateful=False states are resetted together after each batch.
+        self.model.add(Dense(42, activation='relu'))
+        self.model.add(Dense(42, activation='relu'))
         self.model.add(Dense(24, activation='relu'))
         self.model.add(Dense(actions, activation='linear'))
         #dot_img_file = '/model_1.png'

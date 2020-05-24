@@ -45,11 +45,14 @@ class dobotHandler:
         #print(f'x:{x} y:{y} z:{z} j1:{j1} j2:{j2} j3:{j3} j4:{j4}')
         return self.position, self.getTime
 
-    def setPosition(self, x = 259.1198, y = 0, z=-8.5687, r=0 ,wait = False):
+    def setPosition(self, x = 259.1198, y = 0, z=-8.5687, r=0 ,wait = False, joint=False):
         positionTimeStamp = self.getPositionTimeStamp()
         self.device._set_queued_cmd_clear()
         #self.getPosition()
-        self.device.move_to(x, y, z, r, wait)
+        if joint is False:
+            self.device.move_to(x, y, z, r, wait)
+        else:
+            self.device.move_to_joint(x, y, z, r, wait)
         return positionTimeStamp
         #self.device.go(x, y, z, r, wait)
         #self.device._set_queued_cmd_start_exec()
