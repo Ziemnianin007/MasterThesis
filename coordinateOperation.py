@@ -13,8 +13,8 @@ import math
 class coordinateOperation:
     def __init__(self, graphDataLength = 50, plot = True, save = True, emulateOculus = True):
         #home dobot magician in dobotstudio, then disconnect and run
-
-        self.oculusQuestConnectionInstance = oculusQuestConnection.oculusQuestConnection(emulateOculus)
+        self.emulateOculus = emulateOculus
+        self.oculusQuestConnectionInstance = oculusQuestConnection.oculusQuestConnection(self.emulateOculus)
         self.dobotHandlerInstance = dobotHandler.dobotHandler()
 
         self.maxR = 190
@@ -67,6 +67,9 @@ class coordinateOperation:
         self.grip = False
         self.oldGrip = False
         self.actualPositionOculus = None
+        if self.emulateOculus:
+            emulateData = self.loadData(path= "C:/Users/jakub/Documents/W4/MasterThesis/PythonProgram/tmp/notWork/movePathSave_date_2020-5-24_19-11-5", plot =False, loop = False)
+            self.oculusQuestEmulationLoadData(emulateData)
         self.oculusRefreshingThread = threading.Thread(target=self.refreshActualPosition, daemon=True)
         self.oculusRefreshingThread.start()
         time.sleep(0.25)
@@ -90,7 +93,6 @@ class coordinateOperation:
     # Y Up
     # Z Forward
     """
-
     def refreshActualPosition(self):
         #print("aaa")
         self.actualPositionOculus = self.oculusQuestConnectionInstance.getPosition()
@@ -281,46 +283,57 @@ class coordinateOperation:
         #pprint.pprint(self.positionArray)
 
     def plotNow(self):
-        self.plotDataInstance.plot(self.positionArray, self.graphDataLength)
+        repaired = self.repairData(self.positionArray)
+        self.plotDataInstance.plot(repaired, self.graphDataLength)
+
+    def repairData(self, positionArray):
+        length = []
+        for key, list in positionArray.items():
+            length.append(len(list))
+        minimalLength = min(length)
+        if (minimalLength == 0):
+            print("Loaded data have length 0")
+        reducedArray = {}
+        for key, list in positionArray.items():
+            reducedArray[key] = list[0:minimalLength - 1]
+        longerArray = {}
+        longerArray['oculusX'] = positionArray['oculusX']
+        longerArray['oculusY'] = positionArray['oculusY']
+        longerArray['oculusZ'] = positionArray['oculusZ']
+        longerArray['oculusTimeStamp'] = positionArray['oculusTimeStamp']
+
+        length = []
+        for key, list in longerArray.items():
+            length.append(len(list))
+        minimalLength = min(length)
+        if (minimalLength == 0):
+            print("Loaded data have length 0")
+        reducedLongerArray = {}
+        for key, list in longerArray.items():
+            reducedLongerArray[key] = list[0:minimalLength - 1]
+
+        positionArray = reducedArray
+        for key, list in reducedLongerArray.items():
+            positionArray[key] = list
+        return positionArray
+
 
     def loadData(self, plot = True, path = None, loop = True):
         thisPath = path
+        positionArray = None
         while(True):
             positionArray, path = fileOperation.loadJson(fileName = "name",extension=".json", thisPath = thisPath)
-            length = []
-            for key, list in positionArray.items():
-                length.append(len(list))
-            minimalLength = min(length)
-            if(minimalLength == 0):
-                print("Loaded data have length 0")
-            reducedArray = {}
-            for key, list in positionArray.items():
-                reducedArray[key] = list[0:minimalLength-1]
-            longerArray = {}
-            longerArray['oculusX'] = positionArray['oculusX']
-            longerArray['oculusY'] = positionArray['oculusY']
-            longerArray['oculusZ'] = positionArray['oculusZ']
-            longerArray['oculusTimeStamp'] = positionArray['oculusTimeStamp']
-
-            length = []
-            for key, list in longerArray.items():
-                length.append(len(list))
-            minimalLength = min(length)
-            if(minimalLength == 0):
-                print("Loaded data have length 0")
-            reducedLongerArray = {}
-            for key, list in longerArray.items():
-                reducedLongerArray[key] = list[0:minimalLength-1]
-
-            positionArray = reducedArray
-            for key, list in  reducedLongerArray.items():
-                positionArray[key] = list
+            positionArray = self.repairData(positionArray)
             if plot is True:
                 self.plotDataInstance.plot(positionArray, self.graphDataLength, title = path.split("/")[-1].split(".")[0])
                 plt.show()
             if loop is False:
                 break
         return positionArray
+
+    def oculusQuestEmulationLoadData(self,emulationData):
+        self.oculusQuestConnectionInstance.loadData(emulationData)
+
 
     def preparationForMoving(self):
         self.path = fileOperation.saveToFolder(self.positionArray, name='movePathSave')

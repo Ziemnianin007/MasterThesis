@@ -16,7 +16,7 @@ class oculusQuestConnection:
         self.emulateOculus = emulateOculus
         self.emulationData = emulationData
         self.emulationDataIndex = 0
-        self.emulationGrip = False
+        self.emulationGrip = True
 
     """
     #position, rotation, velocity, angular velocity
@@ -27,7 +27,7 @@ class oculusQuestConnection:
 
     def loadData(self, emulationData = None):
         self.emulateOculus = True
-        self.emulationGrip = False
+        self.emulationGrip = True
         self.emulationData = emulationData
         self.emulationDataIndex = 0
 
@@ -61,11 +61,9 @@ class oculusQuestConnection:
 
     def getPosition(self):
         if(self.emulateOculus is True):
-            if len(self.emulationData) <= self.emulationDataIndex:
-                self.emulationDataIndex = len(self.emulationData) - 1
-                self.emulationGrip = True
-            loadedPosition = self.emulationData[self.emulationDataIndex]
-            self.emulationDataIndex += 1
+            if len(self.emulationData['oculusX']) <= self.emulationDataIndex:
+                self.emulationDataIndex = len(self.emulationData['oculusX']) - 1
+                self.emulationGrip = False
             position = []
             position.append([])
             position.append([])
@@ -73,15 +71,19 @@ class oculusQuestConnection:
             position[0].append(0)
             position[0].append(0)
             position[0].append(0)
+            position[0].append(0)
+            position[1].append(0)
             position[1].append(0)
             position[1].append(0)
             position[1].append(0)
             position[2].append(0)
             position[2].append(0)
             position[2].append(0)
-            position[2][3] = (loadedPosition['oculusX'] - 259.1198) /1000
-            position[0][3] = -(loadedPosition['oculusY']) /1000
-            position[1][3] = (loadedPosition['oculusZ'] + 8.5687) /1000
+            position[2].append(0)
+            position[2][3] = (self.emulationData['oculusX'][self.emulationDataIndex] - 259.1198) /1000
+            position[0][3] = -(self.emulationData['oculusY'][self.emulationDataIndex]) /1000
+            position[1][3] = (self.emulationData['oculusZ'][self.emulationDataIndex] + 8.5687) /1000
+            self.emulationDataIndex += 1
             # self.oculusX = position[2][3] * 1000 + 259.1198
             # self.oculusY = -position[0][3] * 1000 + 0
             # self.oculusZ = position[1][3] * 1000 + 0 - 8.5687

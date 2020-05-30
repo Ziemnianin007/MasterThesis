@@ -8,10 +8,10 @@ import fileOperation
 import threading
 
 class dobotGym(gym.Env):
-    def __init__(self, plot = False, save= True, emulateOculus = True, episodeLength = 15):
-        self.coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = plot, save = save,emulateOculus = emulateOculus)
+    def __init__(self, plot = False, save= True, emulateOculus = True, episodeLength = 15, visualize = True):
+        self.emulateOculus = emulateOculus
+        self.coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = plot, save = save,emulateOculus = self.emulateOculus)
         self.coordinateOperationInstance.recording = False
-
         # Angle at which to fail the episode
 
         # Angle limit set to 2 * theta_threshold_radians so failing observation
@@ -36,7 +36,7 @@ class dobotGym(gym.Env):
         self.observation_space = spaces.Box(np.array([self.minX,self.minY,self.minZ,self.minX,self.minY,self.minZ,self.minX,self.minY,self.minZ, 0]),
                                        np.array([self.maxX,self.maxY,self.maxZ,self.maxX,self.maxY,self.maxZ,self.maxX,self.maxY,self.maxZ, self.agentStepsNumberMax])
                                             ,dtype=np.float32)
-
+        self.visualize = visualize
         self.viewer = None
         self.state = None
 
@@ -143,10 +143,17 @@ class dobotGym(gym.Env):
         while(self.moveDobot is True):
             pass
         self.coordinateOperationInstance.endOfMoving()
+        if self.visualize:
+            self.coordinateOperationInstance.plotNow()
+
         self.coordinateOperationInstance.preparationForMoving()
-        while(self.coordinateOperationInstance.grip is False):
+        while(self.coordinateOperationInstance.grip is False and self.emulateOculus is not True):
             pass
         self.episodeStep = 0
+
+        if(self.emulateOculus):
+            self.loadOculusDataFromFolder()
+
         self.coordinateOperationInstance.preparationForMoving()
         self.agentStepsNumberActual = 0
         self.agentPositionX = self.coordinateOperationInstance.dobotStartX
@@ -156,6 +163,8 @@ class dobotGym(gym.Env):
         self.coordinateOperationInstance.startRecording()
         return np.array(self.state)
 
+    def loadOculusDataFromFolder(self):
+        self.coordinateOperationInstance.oculusQuestEmulationLoadData(self.coordinateOperationInstance.loadData(plot =False , loop = False))
 
     def close(self):
         self.coordinateOperationInstance.endOfMoving()
