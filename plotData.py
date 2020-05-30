@@ -100,7 +100,7 @@ class plotData:
             axeslist.ravel()[ind].set_axis_off()
         plt.tight_layout()  # optional
 
-    def plot(self, plotData, graphDataLengthToDisplay):
+    def plot(self, plotData, graphDataLengthToDisplay, title = ""):
         gdl = None
         if(len(plotData['timestamp']) > graphDataLengthToDisplay):
             gdl = graphDataLengthToDisplay
@@ -133,6 +133,8 @@ class plotData:
         self.diff3D.set_title('Diff 3D')
         self.predicted3D.set_title('Prediction 3D')
 
+        self.fig2D.suptitle(title)
+
         self.subLegend()
         self.fig2D.canvas.draw()
         self.fig2D.canvas.flush_events()
@@ -140,6 +142,7 @@ class plotData:
         self.fig3D.canvas.draw()
         self.fig3D.canvas.flush_events()
         self.firstPlot = False
+
 
         #self.fig.canvas.draw()
         #self.fig.canvas.flush_events()

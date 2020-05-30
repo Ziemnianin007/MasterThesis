@@ -5,7 +5,7 @@ import numpy
 import pprint
 
 class oculusQuestConnection:
-    def __init__(self, emulateOculus = True):
+    def __init__(self, emulateOculus = True, emulationData = None):
 
         if emulateOculus is False:
             openvr.init(openvr.VRApplication_Scene)
@@ -14,7 +14,9 @@ class oculusQuestConnection:
             self.VRCompositor = openvr.VRCompositor()
         #else:
         self.emulateOculus = emulateOculus
-
+        self.emulationData = emulationData
+        self.emulationDataIndex = 0
+        self.emulationGrip = False
 
     """
     #position, rotation, velocity, angular velocity
@@ -22,6 +24,12 @@ class oculusQuestConnection:
     # Y Up
     # Z Forward
     """
+
+    def loadData(self, emulationData = None):
+        self.emulateOculus = True
+        self.emulationGrip = False
+        self.emulationData = emulationData
+        self.emulationDataIndex = 0
 
     def from_controller_state_to_dict(self, pControllerState):
         # docs: https://github.com/ValveSoftware/openvr/wiki/IVRSystem::GetControllerState
@@ -52,16 +60,51 @@ class oculusQuestConnection:
         return d
 
     def getPosition(self):
-        poses = []
-        poses, _ = self.VRCompositor.waitGetPoses(poses, None)
-        """
-        k_unTrackedDeviceIndex_Hmd
-	{"name": "TrackedControllerRole_Invalid","value": "0"}
-	,{"name": "TrackedControllerRole_LeftHand","value": "1"}
-	,{"name": "TrackedControllerRole_RightHand","value": "2"}
-        """
-        hmd_pose = poses[openvr.TrackedControllerRole_RightHand]
-        return hmd_pose.mDeviceToAbsoluteTracking
+        if(self.emulateOculus is True):
+            if len(self.emulationData) <= self.emulationDataIndex:
+                self.emulationDataIndex = len(self.emulationData) - 1
+                self.emulationGrip = True
+            loadedPosition = self.emulationData[self.emulationDataIndex]
+            self.emulationDataIndex += 1
+            position = []
+            position.append([])
+            position.append([])
+            position.append([])
+            position[0].append(0)
+            position[0].append(0)
+            position[0].append(0)
+            position[1].append(0)
+            position[1].append(0)
+            position[1].append(0)
+            position[2].append(0)
+            position[2].append(0)
+            position[2].append(0)
+            position[2][3] = (loadedPosition['oculusX'] - 259.1198) /1000
+            position[0][3] = -(loadedPosition['oculusY']) /1000
+            position[1][3] = (loadedPosition['oculusZ'] + 8.5687) /1000
+            # self.oculusX = position[2][3] * 1000 + 259.1198
+            # self.oculusY = -position[0][3] * 1000 + 0
+            # self.oculusZ = position[1][3] * 1000 + 0 - 8.5687
+            # self.positionArray['oculusX'].append(self.oculusX)
+            # self.positionArray['oculusY'].append(self.oculusY)
+            # self.positionArray['oculusZ'].append(self.oculusZ)
+            # self.positionArray['oculusTimeStamp'].append(time.time())
+            # self.emulationData
+            # self.rightX = position[0][3] - self.homeX  # +- 0.25
+            # self.rightY = position[2][3] - self.homeY  # += 0.25
+            # self.rightZ = position[1][3] - self.homeZ  # +0.5 -0.1
+            return position
+        else:
+            poses = []
+            poses, _ = self.VRCompositor.waitGetPoses(poses, None)
+            """
+            k_unTrackedDeviceIndex_Hmd
+        {"name": "TrackedControllerRole_Invalid","value": "0"}
+        ,{"name": "TrackedControllerRole_LeftHand","value": "1"}
+        ,{"name": "TrackedControllerRole_RightHand","value": "2"}
+            """
+            hmd_pose = poses[openvr.TrackedControllerRole_RightHand]
+            return hmd_pose.mDeviceToAbsoluteTracking
 
     def controllerState(self, controllerId = openvr.TrackedControllerRole_RightHand):
         result, pControllerState = self.VRSystem.getControllerState(controllerId)
@@ -73,7 +116,10 @@ class oculusQuestConnection:
         return self.controllerState()['trigger']
 
     def getRightControllerGrip(self):
-        return self.controllerState()['grip_button']
+        if (self.emulateOculus is True):
+            return self.emulationGrip
+        else:
+            return self.controllerState()['grip_button']
 
     def resetZero(self):
         self.VRSystem.resetSeatedZeroPose()

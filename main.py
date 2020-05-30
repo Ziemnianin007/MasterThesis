@@ -14,7 +14,8 @@ import neuralNetworkPrediction
 
 coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = True, save = True, emulateOculus = False)
 
-coordinateOperationInstance.loadData()
+coordinateOperationInstance.loadData(plot =False, loop = False)
+#coordinateOperationInstance.loadData(path= "C:/Users/jakub/Documents/W4/MasterThesis/PythonProgram/tmp/notWork/movePathSave_date_2020-5-24_19-11-5", plot =False, loop = False)
 #coordinateOperationInstance.runRawDriver()
 #coordinateOperationInstance.runCloserToPosition(30)
 #coordinateOperationInstance.runPolynomialPrediction(backPoints=10,deg=5)

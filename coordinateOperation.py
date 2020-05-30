@@ -280,11 +280,47 @@ class coordinateOperation:
             self.plotDataInstance.plot(self.positionArray, self.graphDataLength)
         #pprint.pprint(self.positionArray)
 
-    def loadData(self):
+    def plotNow(self):
+        self.plotDataInstance.plot(self.positionArray, self.graphDataLength)
+
+    def loadData(self, plot = True, path = None, loop = True):
+        thisPath = path
         while(True):
-            self.positionArray = fileOperation.loadJson(fileName = "name",extension=".json")[0]
-            self.plotDataInstance.plot(self.positionArray, self.graphDataLength)
-            plt.show()
+            positionArray, path = fileOperation.loadJson(fileName = "name",extension=".json", thisPath = thisPath)
+            length = []
+            for key, list in positionArray.items():
+                length.append(len(list))
+            minimalLength = min(length)
+            if(minimalLength == 0):
+                print("Loaded data have length 0")
+            reducedArray = {}
+            for key, list in positionArray.items():
+                reducedArray[key] = list[0:minimalLength-1]
+            longerArray = {}
+            longerArray['oculusX'] = positionArray['oculusX']
+            longerArray['oculusY'] = positionArray['oculusY']
+            longerArray['oculusZ'] = positionArray['oculusZ']
+            longerArray['oculusTimeStamp'] = positionArray['oculusTimeStamp']
+
+            length = []
+            for key, list in longerArray.items():
+                length.append(len(list))
+            minimalLength = min(length)
+            if(minimalLength == 0):
+                print("Loaded data have length 0")
+            reducedLongerArray = {}
+            for key, list in longerArray.items():
+                reducedLongerArray[key] = list[0:minimalLength-1]
+
+            positionArray = reducedArray
+            for key, list in  reducedLongerArray.items():
+                positionArray[key] = list
+            if plot is True:
+                self.plotDataInstance.plot(positionArray, self.graphDataLength, title = path.split("/")[-1].split(".")[0])
+                plt.show()
+            if loop is False:
+                break
+        return positionArray
 
     def preparationForMoving(self):
         self.path = fileOperation.saveToFolder(self.positionArray, name='movePathSave')

@@ -92,7 +92,7 @@ def saveJson(fileName, data, extension = '.json', thisPath = None, silent = Fals
 def loadJson(fileName, extension = '.json', thisPath = None):
     print('Loading from json type file')
     if(thisPath is not None):
-        path = fileName+extension
+        path = thisPath+extension
     else:
         path = openDialogFunction(extension, fileName)
     print(path.split(".")[-1])
