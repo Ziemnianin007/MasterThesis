@@ -49,7 +49,7 @@ from livelossplot import PlotLossesKeras
 from rl.core import Processor
 
 class DQN:
-    def __init__(self, env = "CartPole-v1", emulateOculus = True, visualize = True, policyValues = {"inner_policy": EpsGreedyQPolicy(), "attr":"eps", "value_max":0.75, "value_min":.01, "value_test":.0, "nb_steps":50000}):
+    def __init__(self, env = "CartPole-v1", emulateOculus = True, visualize = True,teachingFilesPath = None, policyValues = {"inner_policy": EpsGreedyQPolicy(), "attr":"eps", "value_max":0.75, "value_min":.01, "value_test":.0, "nb_steps":50000}):
         self.policyValues = policyValues
         os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin/'
         physical_devices = tf.config.experimental.list_physical_devices('GPU')
@@ -65,7 +65,7 @@ class DQN:
             self.tensorboard_callback = keras.callbacks.TensorBoard(log_dir=logdir)
             self.visualize = True
         elif env == "Dobot":
-            self.env = dobotGym.dobotGym(emulateOculus = emulateOculus, episodeLength = self.episodeLength,visualize = visualize)
+            self.env = dobotGym.dobotGym(emulateOculus = emulateOculus, episodeLength = self.episodeLength,visualize = visualize, teachingFilesPath = teachingFilesPath)
             self.states = self.env.observation_space.shape[0]
             self.actions = self.env.action_space.shape[0]
             self.saveFileName = 'sarsa_weights_dobot.h5f'

@@ -6,10 +6,12 @@ import numpy as np
 import coordinateOperation
 import fileOperation
 import threading
+import os
 
 class dobotGym(gym.Env):
-    def __init__(self, plot = False, save= True, emulateOculus = True, episodeLength = 15, visualize = True):
+    def __init__(self, plot = False, save= True, emulateOculus = True, episodeLength = 15, visualize = True, teachingFilesPath = None):
         self.emulateOculus = emulateOculus
+        self.teachingFilesPath = teachingFilesPath
         self.coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = plot, save = save,emulateOculus = self.emulateOculus)
         self.coordinateOperationInstance.recording = False
         # Angle at which to fail the episode
@@ -44,6 +46,10 @@ class dobotGym(gym.Env):
 
         self.episodeLength = episodeLength -2
         self.episodeStep = 0
+
+
+        self.teachingFilesList = os.listdir(self.teachingFilesPath)
+        self.teachingFilesListIndex = 0
 
         self.moveDobot = False
         self.threadDobot = threading.Thread(target=self.moveDobotThreadFunction, name='Thread-b')
@@ -164,7 +170,13 @@ class dobotGym(gym.Env):
         return np.array(self.state)
 
     def loadOculusDataFromFolder(self):
-        self.coordinateOperationInstance.oculusQuestEmulationLoadData(self.coordinateOperationInstance.loadData(plot =False , loop = False))
+        if len(self.teachingFilesList) <= self.teachingFilesListIndex:
+            self.teachingFilesListIndex = 0
+        path = self.teachingFilesPath + "\\" + self.teachingFilesList[self.teachingFilesListIndex].split(".")[0]
+        print("Loading VR path file number: ", self.teachingFilesListIndex, " from: ", path)
+
+        self.coordinateOperationInstance.oculusQuestEmulationLoadData(self.coordinateOperationInstance.loadData(path = path,plot =False , loop = False))
+        self.teachingFilesListIndex += 1
 
     def close(self):
         self.coordinateOperationInstance.endOfMoving()
