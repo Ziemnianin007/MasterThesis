@@ -42,15 +42,15 @@ import rl
 from keras.layers import LSTM
 from rl.agents import NAFAgent
 from rl.agents import SARSAAgent
-from rl.policy import EpsGreedyQPolicy
+from rl.policy import EpsGreedyQPolicy, LinearAnnealedPolicy
 import dobotGym
 from datetime import datetime
 from livelossplot import PlotLossesKeras
 from rl.core import Processor
 
 class DQN:
-    def __init__(self, env = "CartPole-v1", emulateOculus = True):
-
+    def __init__(self, env = "CartPole-v1", emulateOculus = True, policyValues = {"inner_policy": EpsGreedyQPolicy(), "attr":"eps", "value_max":0.75, "value_min":.01, "value_test":.0, "nb_steps":50000}):
+        self.policyValues = policyValues
         os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin/'
         physical_devices = tf.config.experimental.list_physical_devices('GPU')
         print("physical_devices-------------", len(physical_devices))
@@ -108,7 +108,8 @@ class DQN:
 
 
         self.model = self.agentSarsa(self.states, self.actions)
-        self.policy = EpsGreedyQPolicy()
+        #self.policy = EpsGreedyQPolicy()
+        self.policy = LinearAnnealedPolicy(inner_policy = self.policyValues["inner_policy"], attr=self.policyValues["attr"], value_max=self.policyValues["value_max"], value_min=self.policyValues["value_min"], value_test=self.policyValues["value_test"], nb_steps=self.policyValues["nb_steps"])
         self.agent = SARSAAgent(model=self.model, policy=self.policy, nb_actions=self.actions)
 
         self.agent._is_graph_network = True
@@ -164,7 +165,7 @@ class DQN:
             save_freq=25
         )
         self.agent.compile('adam', metrics=['mse'])
-        self.agent.fit(self.env, nb_steps=50000, log_interval=self.episodeLength,  visualize=visualize, verbose=1, nb_max_start_steps  = 1, start_step_policy = self.model.reset_states,
+        self.agent.fit(self.env, nb_steps=self.policyValues["nb_steps"], log_interval=self.episodeLength,  visualize=visualize, verbose=1, nb_max_start_steps  = 1, start_step_policy = self.model.reset_states,
 
                        #callbacks=[PlotLossesKeras()])
     callbacks=[self.tensorboard_callback,model_checkpoint_callback],)

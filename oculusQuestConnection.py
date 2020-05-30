@@ -122,7 +122,9 @@ class oculusQuestConnection:
             return self.controllerState()['grip_button']
 
     def resetZero(self):
-        self.VRSystem.resetSeatedZeroPose()
+        if(self.emulateOculus is False):
+            self.VRSystem.resetSeatedZeroPose()
 
     def __del__(self):
-        openvr.shutdown()
+        if(self.emulateOculus is False):
+            openvr.shutdown()
