@@ -171,7 +171,7 @@ class DQN:
     callbacks=[self.tensorboard_callback,model_checkpoint_callback],)
 
         scores = self.agent.test(self.env, nb_episodes=5, visualize=visualize)
-        print('Average score over 100 test games:{}'.format(np.mean(scores.history['episode_reward'])))
+        print('Average score over 5 test games:{}'.format(np.mean(scores.history['episode_reward'])))
 
         #self.agent.save_weights(self.saveFileName, overwrite=True)
 

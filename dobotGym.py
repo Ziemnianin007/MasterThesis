@@ -50,7 +50,7 @@ class dobotGym(gym.Env):
 
         self.teachingFilesList = os.listdir(self.teachingFilesPath)
         self.teachingFilesListIndex = 0
-
+        self.diffSmallRewardOld = 1
         self.moveDobot = False
         self.threadDobot = threading.Thread(target=self.moveDobotThreadFunction, name='Thread-b')
 
@@ -113,7 +113,13 @@ class dobotGym(gym.Env):
         info = {
             'Diff': self.coordinateOperationInstance.actualDiffXYZ,
         }
-        self.diffSmallReward = 1/(math.sqrt((self.state[3]-self.state[6])** 2+(self.state[4]-self.state[7])** 2+(self.state[5]-self.state[8])** 2)/25+1)
+        #self.diffSmallReward = 1/(math.sqrt((self.state[3]-self.state[6])** 2+(self.state[4]-self.state[7])** 2+(self.state[5]-self.state[8])** 2)/25+1)
+        if (self.diffSmallReward > self.diffSmallRewardOld):
+            self.diffSmallRewardOld = self.diffSmallReward
+            self.diffSmallReward = 1
+            #self.diffSmallReward +=1
+        else:
+            self.diffSmallRewardOld = self.diffSmallReward
 
         self.moveAgent(action)
         self.agentStepsNumberActual += 1
@@ -132,7 +138,7 @@ class dobotGym(gym.Env):
 
         self.moveDobot = True
 
-        reward = 1/(self.coordinateOperationInstance.actualDiffXYZ/25+1)*self.agentStepsNumberMax*4
+        reward = 1/(self.coordinateOperationInstance.actualDiffXYZ/25+1)*self.agentStepsNumberMax*6
         if self.coordinateOperationInstance.grip is True:
             done = False
         else:
@@ -166,6 +172,7 @@ class dobotGym(gym.Env):
         self.agentPositionY = self.coordinateOperationInstance.dobotStartY
         self.agentPositionZ = self.coordinateOperationInstance.dobotStartZ
         self.refreshState()
+        self.diffSmallRewardOld = 1
         self.coordinateOperationInstance.startRecording()
         return np.array(self.state)
 

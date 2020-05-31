@@ -22,7 +22,7 @@ import neuralNetworkPrediction
 #coordinateOperationInstance.runPolynomialPrediction(backPoints=10,deg=5)
 #exit()
 
-neuralNetworkPredictionInstance = neuralNetworkPrediction.DQN("Dobot", emulateOculus = True, visualize = True, teachingFilesPath = "C:\\Users\\jakub\\Documents\\W4\\MasterThesis\\PythonProgram\\tmp\\teach", policyValues = {"inner_policy": EpsGreedyQPolicy(), "attr":"eps", "value_max":0.75, "value_min":.01, "value_test":.0, "nb_steps":300000})
+neuralNetworkPredictionInstance = neuralNetworkPrediction.DQN("Dobot", emulateOculus = True, visualize = True, teachingFilesPath = "C:\\Users\\jakub\\Documents\\W4\\MasterThesis\\PythonProgram\\tmp\\teach", policyValues = {"inner_policy": EpsGreedyQPolicy(), "attr":"eps", "value_max":0.8, "value_min":.01, "value_test":.0, "nb_steps":300000})
 #neuralNetworkPredictionInstance = neuralNetworkPrediction.DQN("CartPole-v1")
 #neuralNetworkPredictionInstance.load()
 #neuralNetworkPredictionInstance.fit(True)
