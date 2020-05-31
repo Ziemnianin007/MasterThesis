@@ -113,10 +113,10 @@ class dobotGym(gym.Env):
         info = {
             'Diff': self.coordinateOperationInstance.actualDiffXYZ,
         }
-        #self.diffSmallReward = 1/(math.sqrt((self.state[3]-self.state[6])** 2+(self.state[4]-self.state[7])** 2+(self.state[5]-self.state[8])** 2)/25+1)
+        self.diffSmallReward = 1/(math.sqrt((self.state[3]-self.state[6])** 2+(self.state[4]-self.state[7])** 2+(self.state[5]-self.state[8])** 2)/25+1)
         if (self.diffSmallReward > self.diffSmallRewardOld):
             self.diffSmallRewardOld = self.diffSmallReward
-            self.diffSmallReward = 1
+            self.diffSmallReward += 1
             #self.diffSmallReward +=1
         else:
             self.diffSmallRewardOld = self.diffSmallReward
