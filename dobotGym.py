@@ -51,6 +51,7 @@ class dobotGym(gym.Env):
         self.teachingFilesList = os.listdir(self.teachingFilesPath)
         self.teachingFilesListIndex = 0
         self.diffSmallRewardOld = 1
+        self.diffSmallReward = 0
         self.moveDobot = False
         self.threadDobot = threading.Thread(target=self.moveDobotThreadFunction, name='Thread-b')
 
