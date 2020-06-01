@@ -21,9 +21,9 @@ class dobotGym(gym.Env):
         maxStep = 150
         #self.action_space = spaces.Box(low=np.array([-maxStep, -maxStep, -maxStep]), high=np.array([maxStep, maxStep, maxStep]),dtype=np.float32)
 
-        self.minX,self.minY,self.minZ = self.coordinateOperationInstance.minX,self.coordinateOperationInstance.minY,self.coordinateOperationInstance.minZ
+        self.minX,self.minY,self.minZ,self.minR = self.coordinateOperationInstance.minX,self.coordinateOperationInstance.minY,self.coordinateOperationInstance.minZ,self.coordinateOperationInstance.minR
 
-        self.maxX,self.maxY,self.maxZ = self.coordinateOperationInstance.maxX,self.coordinateOperationInstance.maxY,self.coordinateOperationInstance.maxZ
+        self.maxX,self.maxY,self.maxZ,self.maxR = self.coordinateOperationInstance.maxX,self.coordinateOperationInstance.maxY,self.coordinateOperationInstance.maxZ,self.coordinateOperationInstance.maxR
 
 
         self.agentStepsNumberMax = 100
@@ -65,10 +65,22 @@ class dobotGym(gym.Env):
 
     def refreshState(self):
         np.set_printoptions(precision=3)
-        self.state = np.array(
-            [self.coordinateOperationInstance.rightXLastDobot, self.coordinateOperationInstance.rightYLastDobot,
-             self.coordinateOperationInstance.rightZLastDobot, self.coordinateOperationInstance.oculusX, self.coordinateOperationInstance.oculusY, self.coordinateOperationInstance.oculusZ,
-             self.agentPositionX, self.agentPositionY, self.agentPositionZ, self.agentStepsNumberActual])
+        # TODO change positionArray['dobotX'][-1] last dobot
+        if(len(self.coordinateOperationInstance.positionArray['dobotZ'])>0):
+            self.state = np.array(
+                [self.coordinateOperationInstance.positionArray['dobotX'][-1],
+                 self.coordinateOperationInstance.positionArray['dobotY'][-1],
+                 self.coordinateOperationInstance.positionArray['dobotZ'][-1], self.coordinateOperationInstance.oculusX,
+                 self.coordinateOperationInstance.oculusY, self.coordinateOperationInstance.oculusZ,
+                 self.agentPositionX, self.agentPositionY, self.agentPositionZ, self.agentStepsNumberActual])
+        else:
+            self.state = np.array(
+                [self.coordinateOperationInstance.rightXLastDobot, self.coordinateOperationInstance.rightYLastDobot,
+                 self.coordinateOperationInstance.rightZLastDobot, self.coordinateOperationInstance.oculusX,
+                 self.coordinateOperationInstance.oculusY, self.coordinateOperationInstance.oculusZ,
+                 self.agentPositionX, self.agentPositionY, self.agentPositionZ, self.agentStepsNumberActual])
+
+
 
     def moveAgent(self,action):
         #self.agentStep = self.agentStepsNumberMax - self.agentStepsNumberActual
@@ -107,6 +119,23 @@ class dobotGym(gym.Env):
         if  self.agentPositionZ > self.maxZ:
             self.agentPositionZ = self.maxZ
             tooFar = True
+
+        R = math.sqrt(self.agentPositionX**2+self.agentPositionY**2)
+        if self.agentPositionY == 0:
+            self.agentPositionY = 0.001
+        tg = self.agentPositionX/self.agentPositionY
+        if R == 0:
+            R = 0.001
+        if(R<self.minR):
+            self.agentPositionX = self.agentPositionX * self.minR / R
+            self.agentPositionY = self.agentPositionY * self.minR / R
+            tooFar = True
+        if(R>self.maxR):
+            self.agentPositionX = self.agentPositionX * self.maxR / R
+            self.agentPositionY = self.agentPositionY * self.maxR / R
+            tooFar = True
+
+
         if tooFar is True:
             self.diffSmallReward = self.diffSmallReward/10
 
@@ -114,7 +143,7 @@ class dobotGym(gym.Env):
         info = {
             'Diff': self.coordinateOperationInstance.actualDiffXYZ,
         }
-        self.diffSmallReward = 1/(math.sqrt((self.state[3]-self.state[6])** 2+(self.state[4]-self.state[7])** 2+(self.state[5]-self.state[8])** 2)/25+1)
+        self.diffSmallReward = 1/(math.sqrt((self.state[3]-self.state[6])** 2+(self.state[4]-self.state[7])** 2+(self.state[5]-self.state[8])** 2)/25+0.5)
         if (self.diffSmallReward > self.diffSmallRewardOld):
             self.diffSmallRewardOld = self.diffSmallReward
             self.diffSmallReward += 1
@@ -139,7 +168,7 @@ class dobotGym(gym.Env):
 
         self.moveDobot = True
 
-        reward = 1/(self.coordinateOperationInstance.actualDiffXYZ/25+1)*self.agentStepsNumberMax*6
+        reward = 1/(self.coordinateOperationInstance.actualDiffXYZ/25+1)*self.agentStepsNumberMax*8
         if self.coordinateOperationInstance.grip is True:
             done = False
         else:
