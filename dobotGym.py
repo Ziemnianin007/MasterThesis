@@ -9,10 +9,10 @@ import threading
 import os
 
 class dobotGym(gym.Env):
-    def __init__(self, plot = False, save= True, emulateOculus = True, episodeLength = 15, visualize = True, teachingFilesPath = None):
+    def __init__(self, plot = False, save= True, emulateOculus = True, episodeLength = 15, visualize = True, teachingFilesPath = None, dobotDisconnected = False):
         self.emulateOculus = emulateOculus
         self.teachingFilesPath = teachingFilesPath
-        self.coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = plot, save = save,emulateOculus = self.emulateOculus)
+        self.coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = plot, save = save,emulateOculus = self.emulateOculus, dobotDisconnected = dobotDisconnected)
         self.coordinateOperationInstance.recording = False
         # Angle at which to fail the episode
 

@@ -11,11 +11,12 @@ import neuralNetworkPrediction
 import math
 
 class coordinateOperation:
-    def __init__(self, graphDataLength = 50, plot = True, save = True, emulateOculus = True):
+    def __init__(self, graphDataLength = 50, plot = True, save = True, emulateOculus = True, dobotDisconnected = False):
         #home dobot magician in dobotstudio, then disconnect and run
         self.emulateOculus = emulateOculus
         self.oculusQuestConnectionInstance = oculusQuestConnection.oculusQuestConnection(self.emulateOculus)
-        self.dobotHandlerInstance = dobotHandler.dobotHandler()
+        if(dobotDisconnected is False):
+            self.dobotHandlerInstance = dobotHandler.dobotHandler()
 
         self.maxR = 190
         self.minR = 328
@@ -70,10 +71,12 @@ class coordinateOperation:
         if self.emulateOculus:
             emulateData = self.loadData(path= "C:/Users/jakub/Documents/W4/MasterThesis/PythonProgram/tmp/notWork/movePathSave_date_2020-5-24_19-11-5", plot =False, loop = False)
             self.oculusQuestEmulationLoadData(emulateData)
-        self.oculusRefreshingThread = threading.Thread(target=self.refreshActualPosition, daemon=True)
-        self.oculusRefreshingThread.start()
+        if(dobotDisconnected is False):
+            self.oculusRefreshingThread = threading.Thread(target=self.refreshActualPosition, daemon=True)
+            self.oculusRefreshingThread.start()
         time.sleep(0.25)
-        self.getActualPosition()
+        if(dobotDisconnected is False):
+            self.getActualPosition()
         self.dobotPositionTimeStamp = None
         self.plotDataInstance = plotData.plotData()
         self.graphDataLength = graphDataLength
