@@ -20,11 +20,19 @@ import time
 
 class dobotHandler:
     device = None
-    def __init__(self):
-        port = list_ports.comports()[0].device
-        print(port)
-        self.device = dobot.Dobot(port=port, verbose=False)
-        self.device.speed()
+    def __init__(self, emulation = False):
+        self.emulation = emulation
+        if(self.emulation is False):
+            port = list_ports.comports()[0].device
+            print(port)
+            self.device = dobot.Dobot(port=port, verbose=False)
+            self.device.speed()
+        else:
+            self.device = None
+            self.pastStep = 30
+            self.xList = [259.1198]
+            self.yList = [0]
+            self.zList = [-8.5687]
         self.position = None #(x, y, z, r, j1, j2, j3, j4)
         self.getTime = None
 
@@ -33,13 +41,29 @@ class dobotHandler:
         return self.position
 
     def getPosition(self):
+        if(self.emulation is True):
+            if(len(self.zList) <= self.pastStep+1):
+                position = [[]]
+                position[0].append(self.xList[0])
+                position[0].append(self.xList[1])
+                position[0].append(self.xList[2])
+                self.position = position
+                return position
+            else:
+                position = [[]]
+                position[0].append(self.xList[-self.pastStep])
+                position[0].append(self.xList[-self.pastStep])
+                position[0].append(self.xList[-self.pastStep])
+                self.position = position
+                return position
+
         self.position = self.device.pose()
         #print(f'x:{x} y:{y} z:{z} j1:{j1} j2:{j2} j3:{j3} j4:{j4}')
         return self.position
 
     def getPositionTimeStamp(self):
         beforeTime = time.time()
-        self.position = self.device.pose()
+        self.position = self.getPosition()
         afterTime = time.time()
         self.getTime = (afterTime + beforeTime)/2
         #print(f'x:{x} y:{y} z:{z} j1:{j1} j2:{j2} j3:{j3} j4:{j4}')
@@ -49,6 +73,17 @@ class dobotHandler:
         positionTimeStamp = self.getPositionTimeStamp()
         self.device._set_queued_cmd_clear()
         #self.getPosition()
+        if(self.emulation is True):
+            if joint is False:
+                self.xList.append(x)
+                self.yList.append(y)
+                self.zList.append(z)
+            else:
+                self.xList = [259.1198]
+                self.yList = [0]
+                self.zList = [-8.5687]
+            return positionTimeStamp
+
         if joint is False:
             self.device.move_to(x, y, z, r, wait)
         else:

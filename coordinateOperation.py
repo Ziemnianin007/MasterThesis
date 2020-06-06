@@ -11,12 +11,12 @@ import neuralNetworkPrediction
 import math
 
 class coordinateOperation:
-    def __init__(self, graphDataLength = 50, plot = True, save = True, emulateOculus = True, dobotDisconnected = False):
+    def __init__(self, graphDataLength = 50, plot = True, save = True, emulateOculus = True, dobotDisconnected = False, dobotEmulation = False):
         #home dobot magician in dobotstudio, then disconnect and run
         self.emulateOculus = emulateOculus
         self.oculusQuestConnectionInstance = oculusQuestConnection.oculusQuestConnection(self.emulateOculus)
         if(dobotDisconnected is False):
-            self.dobotHandlerInstance = dobotHandler.dobotHandler()
+            self.dobotHandlerInstance = dobotHandler.dobotHandler(dobotEmulation)
 
         self.maxR = 190
         self.minR = 328

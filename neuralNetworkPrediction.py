@@ -49,7 +49,9 @@ from livelossplot import PlotLossesKeras
 from rl.core import Processor
 
 class DQN:
-    def __init__(self, env = "CartPole-v1", emulateOculus = True, visualize = True,teachingFilesPath = None, policyValues = {"inner_policy": EpsGreedyQPolicy(), "attr":"eps", "value_max":0.75, "value_min":.01, "value_test":.0, "nb_steps":50000}):
+    def __init__(self, env = "CartPole-v1", emulateOculus = True, visualize = True,teachingFilesPath = None,
+                 policyValues = {"inner_policy": EpsGreedyQPolicy(), "attr":"eps", "value_max":0.75, "value_min":.01, "value_test":.0, "nb_steps":50000},
+                 dobotEmulation = False):
         self.policyValues = policyValues
         os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin/'
         physical_devices = tf.config.experimental.list_physical_devices('GPU')
@@ -65,7 +67,7 @@ class DQN:
             self.tensorboard_callback = keras.callbacks.TensorBoard(log_dir=logdir)
             self.visualize = True
         elif env == "Dobot":
-            self.env = dobotGym.dobotGym(emulateOculus = emulateOculus, episodeLength = self.episodeLength,visualize = visualize, teachingFilesPath = teachingFilesPath)
+            self.env = dobotGym.dobotGym(emulateOculus = emulateOculus, episodeLength = self.episodeLength,visualize = visualize, teachingFilesPath = teachingFilesPath, dobotEmulation = dobotEmulation)
             self.states = self.env.observation_space.shape[0]
             self.actions = self.env.action_space.shape[0]
             self.saveFileName = 'sarsa_weights_dobot.h5f'
@@ -107,6 +109,9 @@ class DQN:
         #self.agent = self.NAFAgent(self.states, self.actions)
 
 
+        self.savingFreq = 100
+        self.actualSaving = 0
+
         self.model = self.agentSarsa(self.states, self.actions)
         #self.policy = EpsGreedyQPolicy()
         self.policy = LinearAnnealedPolicy(inner_policy = self.policyValues["inner_policy"], attr=self.policyValues["attr"], value_max=self.policyValues["value_max"], value_min=self.policyValues["value_min"], value_test=self.policyValues["value_test"], nb_steps=self.policyValues["nb_steps"])
@@ -126,6 +131,11 @@ class DQN:
 
 
     def saveAgentWeights(self,path, overwrite=True):
+        if self.actualSaving < self.savingFreq:
+            self.actualSaving += 1
+            return None
+        else:
+            self.actualSaving = 0
         path = 'model/checkpoint/' + datetime.now().strftime("%Y%m%d-%H%M%S") + self.saveFileName
         self.agent.save_weights(path,overwrite)
 
@@ -143,6 +153,7 @@ class DQN:
         self.model.add(Dense(42, activation='relu'))
         self.model.add(Dense(24, activation='relu'))
         self.model.add(Dense(actions, activation='linear'))
+        
         #dot_img_file = '/model_1.png'
         #keras.utils.plot_model(self.model, to_file=dot_img_file, show_shapes=True)
         #model.reset_states()
