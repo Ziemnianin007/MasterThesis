@@ -46,7 +46,7 @@ class dobotGym(gym.Env):
         self.steps_beyond_done = None
 
         if(dobotEmulation is True):
-            episodeLength = episodeLength * 100
+            episodeLength = episodeLength * 7
 
         self.episodeLength = episodeLength -2
         self.episodeStep = 0
@@ -161,7 +161,7 @@ class dobotGym(gym.Env):
         self.agentStepsNumberActual += 1
         self.refreshState()
         done = False
-        if(self.agentStepsNumberActual < self.agentStepsNumberMax and self.moveDobot):
+        if(self.agentStepsNumberActual < self.agentStepsNumberMax and (self.moveDobot or (self.dobotEmulation is True and self.agentStepsNumberActual < self.agentStepsNumberMax/7))):
             return np.array(self.state), self.diffSmallReward, done, info
         else:
             self.agentStepsNumberActual = 0
@@ -174,7 +174,7 @@ class dobotGym(gym.Env):
 
         self.moveDobot = True
 
-        reward = 1/(self.coordinateOperationInstance.actualDiffXYZ/25+1)*self.agentStepsNumberMax*8
+        reward = 1/(self.coordinateOperationInstance.actualDiffXYZ/5+1)*self.agentStepsNumberMax*8
         if self.coordinateOperationInstance.grip is True:
             done = False
         else:

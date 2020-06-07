@@ -29,7 +29,7 @@ class dobotHandler:
             self.device.speed()
         else:
             self.device = None
-            self.pastStep = 30
+            self.pastStep = 1
             self.xList = [259.1198]
             self.yList = [0]
             self.zList = [-8.5687]
