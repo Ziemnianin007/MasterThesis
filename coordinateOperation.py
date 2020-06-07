@@ -12,11 +12,12 @@ import math
 
 class coordinateOperation:
     def __init__(self, graphDataLength = 50, plot = True, save = True, emulateOculus = True, dobotDisconnected = False, dobotEmulation = False):
+        self.dobotEmulation = dobotEmulation
         #home dobot magician in dobotstudio, then disconnect and run
         self.emulateOculus = emulateOculus
         self.oculusQuestConnectionInstance = oculusQuestConnection.oculusQuestConnection(self.emulateOculus)
         if(dobotDisconnected is False):
-            self.dobotHandlerInstance = dobotHandler.dobotHandler(dobotEmulation)
+            self.dobotHandlerInstance = dobotHandler.dobotHandler(self.dobotEmulation)
 
         self.maxR = 190
         self.minR = 328
@@ -65,13 +66,15 @@ class coordinateOperation:
 
         self.actualDiffXYZ = 0
 
+        self.onlyOnce = False
+
         self.grip = False
         self.oldGrip = False
         self.actualPositionOculus = None
         if self.emulateOculus:
             emulateData = self.loadData(path= "C:/Users/jakub/Documents/W4/MasterThesis/PythonProgram/tmp/notWork/movePathSave_date_2020-5-24_19-11-5", plot =False, loop = False)
             self.oculusQuestEmulationLoadData(emulateData)
-        if(dobotDisconnected is False):
+        if(dobotDisconnected is False and self.dobotEmulation is False):
             self.oculusRefreshingThread = threading.Thread(target=self.refreshActualPosition, daemon=True)
             self.oculusRefreshingThread.start()
         time.sleep(0.25)
@@ -98,25 +101,33 @@ class coordinateOperation:
     """
     def refreshActualPosition(self):
         #print("aaa")
-        self.actualPositionOculus = self.oculusQuestConnectionInstance.getPosition()
-        self.oldGrip = self.grip
-        self.grip = self.oculusQuestConnectionInstance.getRightControllerGrip()
-        self.oculusHomePosition()
+        if(self.onlyOnce is False):
+            self.actualPositionOculus = self.oculusQuestConnectionInstance.getPosition()
+            self.oldGrip = self.grip
+            self.grip = self.oculusQuestConnectionInstance.getRightControllerGrip()
+            self.oculusHomePosition()
+            self.onlyOnce = True
+
         while (True):
             self.actualPositionOculus = self.oculusQuestConnectionInstance.getPosition()
             self.oldGrip = self.grip
             self.grip = self.oculusQuestConnectionInstance.getRightControllerGrip()
-            self.getActualPosition()
+            if self.dobotEmulation is True:
+                self.dobotEmulation = False
+                self.getActualPosition()
+                self.dobotEmulation = True
+            else:
+                self.getActualPosition()
             self.coordinateFromOculusToDobotTranslation()
-
-
-
             if self.recording is True:
                 self.positionArray['oculusX'].append(self.oculusX)
                 self.positionArray['oculusY'].append(self.oculusY)
                 self.positionArray['oculusZ'].append(self.oculusZ)
                 self.positionArray['oculusTimeStamp'].append(time.time())
-            time.sleep(0.05)
+            if(self.dobotEmulation is False):
+                time.sleep(0.05)
+            if self.dobotEmulation is True:
+                break
 
 
             #print(self.actualPositionOculus)
@@ -129,6 +140,8 @@ class coordinateOperation:
         return(self.homeX,self.homeY,self.homeZ)
 
     def getActualPosition(self):
+        if(self.dobotEmulation is True):
+            self.refreshActualPosition()
         position = self.actualPositionOculus
         self.rightX = position[0][3] - self.homeX  # +- 0.25
         self.rightY = position[2][3] - self.homeY  # += 0.25
@@ -253,7 +266,6 @@ class coordinateOperation:
         self.rightXLastDobot = dobotX
         self.rightYLastDobot = dobotY
         self.rightZLastDobot = dobotZ
-
         self.positionArray['dobotX'].append(self.dobotPositionTimeStamp[0][0])
         self.positionArray['dobotY'].append(self.dobotPositionTimeStamp[0][1])
         self.positionArray['dobotZ'].append(self.dobotPositionTimeStamp[0][2])
@@ -265,10 +277,14 @@ class coordinateOperation:
         self.positionArray['oculusXSynchronized'].append(self.oculusX)
         self.positionArray['oculusYSynchronized'].append(self.oculusY)
         self.positionArray['oculusZSynchronized'].append(self.oculusZ)
-
-        self.positionArray['diffX'].append(self.positionArray['oculusX'][-1] - self.positionArray['dobotX'][-1])
-        self.positionArray['diffY'].append(self.positionArray['oculusY'][-1] - self.positionArray['dobotY'][-1])
-        self.positionArray['diffZ'].append(self.positionArray['oculusZ'][-1] - self.positionArray['dobotZ'][-1])
+        if len(self.positionArray['dobotZ']) != 0 and len(self.positionArray['oculusX']) !=0:
+            self.positionArray['diffX'].append(self.positionArray['oculusX'][-1] - self.positionArray['dobotX'][-1])
+            self.positionArray['diffY'].append(self.positionArray['oculusY'][-1] - self.positionArray['dobotY'][-1])
+            self.positionArray['diffZ'].append(self.positionArray['oculusZ'][-1] - self.positionArray['dobotZ'][-1])
+        else:
+            self.positionArray['diffX'].append(100)
+            self.positionArray['diffY'].append(100)
+            self.positionArray['diffZ'].append(100)
 
         diffShortestWay = math.sqrt(self.positionArray['diffX'][-1]**2 + self.positionArray['diffY'][-1]**2 + self.positionArray['diffZ'][-1]**2)
 

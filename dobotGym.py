@@ -10,9 +10,10 @@ import os
 
 class dobotGym(gym.Env):
     def __init__(self, plot = False, save= True, emulateOculus = True, episodeLength = 15, visualize = True, teachingFilesPath = None, dobotDisconnected = False, dobotEmulation = False):
+        self.dobotEmulation = dobotEmulation
         self.emulateOculus = emulateOculus
         self.teachingFilesPath = teachingFilesPath
-        self.coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = plot, save = save,emulateOculus = self.emulateOculus, dobotDisconnected = dobotDisconnected, dobotEmulation = dobotEmulation)
+        self.coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = plot, save = save,emulateOculus = self.emulateOculus, dobotDisconnected = dobotDisconnected, dobotEmulation = self.dobotEmulation)
         self.coordinateOperationInstance.recording = False
         # Angle at which to fail the episode
 
@@ -44,6 +45,9 @@ class dobotGym(gym.Env):
 
         self.steps_beyond_done = None
 
+        if(dobotEmulation is True):
+            episodeLength = episodeLength * 100
+
         self.episodeLength = episodeLength -2
         self.episodeStep = 0
 
@@ -64,6 +68,8 @@ class dobotGym(gym.Env):
                 self.moveDobot = False
 
     def refreshState(self):
+        if self.dobotEmulation is True:
+            self.coordinateOperationInstance.refreshActualPosition()
         np.set_printoptions(precision=3)
         # TODO change positionArray['dobotX'][-1] last dobot
         if(len(self.coordinateOperationInstance.positionArray['dobotZ'])>0):
@@ -155,7 +161,7 @@ class dobotGym(gym.Env):
         self.agentStepsNumberActual += 1
         self.refreshState()
         done = False
-        if(self.agentStepsNumberActual < self.agentStepsNumberMax and self.moveDobot is True):
+        if(self.agentStepsNumberActual < self.agentStepsNumberMax and self.moveDobot):
             return np.array(self.state), self.diffSmallReward, done, info
         else:
             self.agentStepsNumberActual = 0

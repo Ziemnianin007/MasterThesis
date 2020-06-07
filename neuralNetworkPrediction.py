@@ -153,7 +153,7 @@ class DQN:
         self.model.add(Dense(42, activation='relu'))
         self.model.add(Dense(24, activation='relu'))
         self.model.add(Dense(actions, activation='linear'))
-        
+        self.path = fileOperation.saveToFolder(self.model.to_json(), name='modelShape', folder = "model\\checkpoint")
         #dot_img_file = '/model_1.png'
         #keras.utils.plot_model(self.model, to_file=dot_img_file, show_shapes=True)
         #model.reset_states()

@@ -43,17 +43,17 @@ class dobotHandler:
     def getPosition(self):
         if(self.emulation is True):
             if(len(self.zList) <= self.pastStep+1):
-                position = [[]]
-                position[0].append(self.xList[0])
-                position[0].append(self.xList[1])
-                position[0].append(self.xList[2])
+                position = []
+                position.append(self.xList[0])
+                position.append(self.yList[0])
+                position.append(self.zList[0])
                 self.position = position
                 return position
             else:
-                position = [[]]
-                position[0].append(self.xList[-self.pastStep])
-                position[0].append(self.xList[-self.pastStep])
-                position[0].append(self.xList[-self.pastStep])
+                position = []
+                position.append(self.xList[-self.pastStep])
+                position.append(self.yList[-self.pastStep])
+                position.append(self.zList[-self.pastStep])
                 self.position = position
                 return position
 
@@ -71,7 +71,6 @@ class dobotHandler:
 
     def setPosition(self, x = 259.1198, y = 0, z=-8.5687, r=0 ,wait = False, joint=False):
         positionTimeStamp = self.getPositionTimeStamp()
-        self.device._set_queued_cmd_clear()
         #self.getPosition()
         if(self.emulation is True):
             if joint is False:
@@ -84,6 +83,7 @@ class dobotHandler:
                 self.zList = [-8.5687]
             return positionTimeStamp
 
+        self.device._set_queued_cmd_clear()
         if joint is False:
             self.device.move_to(x, y, z, r, wait)
         else:
