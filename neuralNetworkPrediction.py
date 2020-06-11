@@ -1,4 +1,3 @@
-
 import os
 import tensorflow as tf
 
@@ -48,10 +47,12 @@ from datetime import datetime
 from livelossplot import PlotLossesKeras
 from rl.core import Processor
 
+
 class DQN:
-    def __init__(self, env = "CartPole-v1", emulateOculus = True, visualize = True,teachingFilesPath = None,
-                 policyValues = {"inner_policy": EpsGreedyQPolicy(), "attr":"eps", "value_max":0.75, "value_min":.01, "value_test":.0, "nb_steps":50000},
-                 dobotEmulation = False):
+    def __init__(self, env="CartPole-v1", emulateOculus=True, visualize=True, teachingFilesPath=None,
+                 policyValues={"inner_policy": EpsGreedyQPolicy(), "attr": "eps", "value_max": 0.75, "value_min": .01,
+                               "value_test": .0, "nb_steps": 50000},
+                 dobotEmulation=False):
         self.policyValues = policyValues
         os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin/'
         physical_devices = tf.config.experimental.list_physical_devices('GPU')
@@ -67,7 +68,9 @@ class DQN:
             self.tensorboard_callback = keras.callbacks.TensorBoard(log_dir=logdir)
             self.visualize = True
         elif env == "Dobot":
-            self.env = dobotGym.dobotGym(emulateOculus = emulateOculus, episodeLength = self.episodeLength,visualize = visualize, teachingFilesPath = teachingFilesPath, dobotEmulation = dobotEmulation)
+            self.env = dobotGym.dobotGym(emulateOculus=emulateOculus, episodeLength=self.episodeLength,
+                                         visualize=visualize, teachingFilesPath=teachingFilesPath,
+                                         dobotEmulation=dobotEmulation)
             self.states = self.env.observation_space.shape[0]
             self.actions = self.env.action_space.shape[0]
             self.saveFileName = 'sarsa_weights_dobot.h5f'
@@ -77,9 +80,9 @@ class DQN:
         else:
             raise TypeError("Wrong env")
 
-        print('States', self.states)#To get an idea about the number of variables affecting the environment
-        print('Actions', self.actions) # To get an idea about the number of possible actions in the environment, do [right,left]
-
+        print('States', self.states)  # To get an idea about the number of variables affecting the environment
+        print('Actions',
+              self.actions)  # To get an idea about the number of possible actions in the environment, do [right,left]
 
         #
 
@@ -103,23 +106,29 @@ class DQN:
         #         score += reward
         #     print('episode {} score {}'.format(episode, score))
 
+        # not working :(
+        # self.agent = self.agentDDP(self.states, self.actions)
+        # self.agent = self.NAFAgent(self.states, self.actions)
 
-        #not working :(
-        #self.agent = self.agentDDP(self.states, self.actions)
-        #self.agent = self.NAFAgent(self.states, self.actions)
-
+        # self.policy = EpsGreedyQPolicy()
 
         self.savingFreq = 100
         self.actualSaving = 0
 
         self.model = self.agentSarsa(self.states, self.actions)
-        #self.policy = EpsGreedyQPolicy()
-        self.policy = LinearAnnealedPolicy(inner_policy = self.policyValues["inner_policy"], attr=self.policyValues["attr"], value_max=self.policyValues["value_max"], value_min=self.policyValues["value_min"], value_test=self.policyValues["value_test"], nb_steps=self.policyValues["nb_steps"])
+        self.policy = LinearAnnealedPolicy(inner_policy=self.policyValues["inner_policy"],
+                                           attr=self.policyValues["attr"],
+                                           value_max=self.policyValues["value_max"],
+                                           value_min=self.policyValues["value_min"],
+                                           value_test=self.policyValues["value_test"],
+                                           nb_steps=self.policyValues["nb_steps"])
         self.agent = SARSAAgent(model=self.model, policy=self.policy, nb_actions=self.actions)
 
         self.agent._is_graph_network = True
+
         def t():
             return False
+
         self.agent._in_multi_worker_mode = t
 
         self.agent.save = self.saveAgentWeights
@@ -127,36 +136,31 @@ class DQN:
         def lenmeh():
             return self.actions
 
-        #self.agent.__len__ = lenmeh
+        # self.agent.__len__ = lenmeh
 
-
-    def saveAgentWeights(self,path, overwrite=True):
+    def saveAgentWeights(self, path, overwrite=True):
         if self.actualSaving < self.savingFreq:
             self.actualSaving += 1
             return None
         else:
             self.actualSaving = 0
         path = 'model/checkpoint/' + datetime.now().strftime("%Y%m%d-%H%M%S") + self.saveFileName
-        self.agent.save_weights(path,overwrite)
-
-
-
-
+        self.agent.save_weights(path, overwrite)
 
     def agentSarsa(self, states, actions):
-        n_steps_in = 5
-        n_features = 24
         self.model = Sequential()
-        #model.add(Flatten(input_shape=(1, states)))
-        self.model.add(LSTM(24, activation='relu',input_shape=(1, states))) #, stateful=False states are resetted together after each batch.
+        self.model.add(LSTM(24, activation='relu', input_shape=(1, states)))
         self.model.add(Dense(42, activation='relu'))
         self.model.add(Dense(42, activation='relu'))
         self.model.add(Dense(24, activation='relu'))
         self.model.add(Dense(actions, activation='linear'))
-        self.path = fileOperation.saveToFolder(self.model.to_json(), name='modelShape', folder = "model\\checkpoint")
-        #dot_img_file = '/model_1.png'
-        #keras.utils.plot_model(self.model, to_file=dot_img_file, show_shapes=True)
-        #model.reset_states()
+        self.path = fileOperation.saveToFolder(self.model.to_json(), name='modelShape', folder="model\\checkpoint")
+
+        # , stateful=False states are resetted together after each batch.
+        # model.add(Flatten(input_shape=(1, states)))
+        # dot_img_file = '/model_1.png'
+        # keras.utils.plot_model(self.model, to_file=dot_img_file, show_shapes=True)
+        # model.reset_states()
         return self.model
 
     def load(self):
@@ -165,10 +169,10 @@ class DQN:
         self.agent.load_weights(path)
         self.agent.compile('adam', metrics=['mse'])
 
-    def test(self,nb_episodes=2):
-        _ = self.agent.test(self.env, nb_episodes = nb_episodes, visualize=self.visualize)
+    def test(self, nb_episodes=2):
+        _ = self.agent.test(self.env, nb_episodes=nb_episodes, visualize=self.visualize)
 
-    def fit(self,visualize = False):
+    def fit(self, visualize=False):
         checkpoint_filepath = 'model/checkpoint/'
         model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
             filepath=checkpoint_filepath,
@@ -176,21 +180,22 @@ class DQN:
             save_freq=25
         )
         self.agent.compile('adam', metrics=['mse'])
-        self.agent.fit(self.env, nb_steps=self.policyValues["nb_steps"], log_interval=self.episodeLength,  visualize=visualize, verbose=1, nb_max_start_steps  = 1, start_step_policy = self.model.reset_states,
+        self.agent.fit(self.env, nb_steps=self.policyValues["nb_steps"], log_interval=self.episodeLength,
+                       visualize=visualize, verbose=1, nb_max_start_steps=1, start_step_policy=self.model.reset_states,
 
-                       #callbacks=[PlotLossesKeras()])
-    callbacks=[self.tensorboard_callback,model_checkpoint_callback],)
+                       # callbacks=[PlotLossesKeras()])
+                       callbacks=[self.tensorboard_callback, model_checkpoint_callback], )
 
         scores = self.agent.test(self.env, nb_episodes=5, visualize=visualize)
         print('Average score over 5 test games:{}'.format(np.mean(scores.history['episode_reward'])))
 
-        #self.agent.save_weights(self.saveFileName, overwrite=True)
-
+        # self.agent.save_weights(self.saveFileName, overwrite=True)
 
     # https://medium.com/@abhishek.bn93/using-keras-reinforcement-learning-api-with-openai-gym-6c2a35036c83
 
+
 class PendulumProcessor(Processor):
     def process_reward(self, reward):
-            # The magnitude of the reward can be important. Since each step yields a relatively
-            # high reward, we reduce the magnitude by two orders.
+        # The magnitude of the reward can be important. Since each step yields a relatively
+        # high reward, we reduce the magnitude by two orders.
         return reward / 100.
