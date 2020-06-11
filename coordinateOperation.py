@@ -372,18 +372,15 @@ class coordinateOperation:
         self.recording = False
 
     def runRawDriver(self):
-        #self.path = fileOperation.saveToFolder(self.positionArray,name = 'movePathSave')
-        #self.dobotHome()    #dobot goes to home position
-        #self.oculusHomePosition() #oculus homing operation
-        while(1):
-            if self.grip is True:   #grip is trigerred
-                if self.grip is not self.oldGrip:   #grip changed state, reseting relative coordinates
-                    self.preparationForMoving()
-                    self.startRecording()
-                self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
-                self.moveDobotToPreparedPosition()  #move dobot to position
+        while True:
+            if self.grip is True:   # grip is triggered
+                if self.grip is not self.oldGrip:   # grip changed state, reset relative coordinates
+                    self.preparationForMoving()     # calibration of the arm and reset of the variables
+                    self.startRecording()   # records all incoming position
+                self.coordinateFromOculusToDobotTranslation() # translating coordinates from oculus to dobot system
+                self.moveDobotToPreparedPosition()  # move dobot to position
             else:
-                self.endOfMoving()
+                self.endOfMoving()  # stops recording, stops movement
 
     def runCloserToPosition(self, maxMove = 30):
         #self.path = fileOperation.saveToFolder(self.positionArray,name = 'movePathSave')

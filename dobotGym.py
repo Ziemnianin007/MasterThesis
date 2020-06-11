@@ -45,7 +45,7 @@ class dobotGym(gym.Env):
 
         self.steps_beyond_done = None
 
-        if(dobotEmulation is True):
+        if(self.dobotEmulation is True):
             episodeLength = episodeLength * 7
 
         self.episodeLength = episodeLength -2
@@ -82,9 +82,11 @@ class dobotGym(gym.Env):
         else:
             self.state = np.array(
                 [self.coordinateOperationInstance.rightXLastDobot, self.coordinateOperationInstance.rightYLastDobot,
-                 self.coordinateOperationInstance.rightZLastDobot, self.coordinateOperationInstance.oculusX,
-                 self.coordinateOperationInstance.oculusY, self.coordinateOperationInstance.oculusZ,
-                 self.agentPositionX, self.agentPositionY, self.agentPositionZ, self.agentStepsNumberActual])
+                 self.coordinateOperationInstance.rightZLastDobot,
+                 self.coordinateOperationInstance.oculusX, self.coordinateOperationInstance.oculusY,
+                 self.coordinateOperationInstance.oculusZ,
+                 self.agentPositionX, self.agentPositionY, self.agentPositionZ,
+                 self.agentStepsNumberActual])
 
 
 
