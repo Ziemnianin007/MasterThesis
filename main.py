@@ -13,9 +13,9 @@ import coordinateOperation
 
 import neuralNetworkPrediction
 
-#coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = True, save = True, emulateOculus = True,dobotDisconnected=True)
+coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = True, save = True, emulateOculus = True,dobotDisconnected=True)
 
-#coordinateOperationInstance.loadData(plot =True , loop = True)
+coordinateOperationInstance.loadData(plot =True , loop = True)
 #coordinateOperationInstance.loadData(path= "C:/Users/jakub/Documents/W4/MasterThesis/PythonProgram/tmp/notWork/movePathSave_date_2020-5-24_19-11-5", plot =False, loop = False)
 #coordinateOperationInstance.runRawDriver()
 #coordinateOperationInstance.runCloserToPosition(30)

@@ -149,11 +149,11 @@ class DQN:
 
     def agentSarsa(self, states, actions):
         self.model = Sequential()
-        self.model.add(LSTM(24, activation='relu', input_shape=(1, states)))
-        self.model.add(Dense(42, activation='relu'))
-        self.model.add(Dense(42, activation='relu'))
-        self.model.add(Dense(24, activation='relu'))
-        self.model.add(Dense(actions, activation='linear'))
+        self.model.add(LSTM(42, activation='sigmoid', input_shape=(1, states)))
+        self.model.add(Dense(42, activation='sigmoid'))
+        self.model.add(Dense(42, activation='sigmoid'))
+        self.model.add(Dense(24, activation='sigmoid'))
+        self.model.add(Dense(actions, activation='softmax'))
         self.path = fileOperation.saveToFolder(self.model.to_json(), name='modelShape', folder="model\\checkpoint")
 
         # , stateful=False states are resetted together after each batch.
