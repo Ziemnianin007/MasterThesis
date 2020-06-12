@@ -151,7 +151,6 @@ class dobotGym(gym.Env):
         if (self.diffSmallReward > self.diffSmallRewardOld):
             self.diffSmallRewardOld = self.diffSmallReward
             self.diffSmallReward += 0.5
-            #self.diffSmallReward +=1
         else:
             self.diffSmallRewardOld = self.diffSmallReward
 
@@ -173,6 +172,7 @@ class dobotGym(gym.Env):
         self.moveDobot = True
 
         reward = 1/(math.log2(self.coordinateOperationInstance.actualDiffXYZ+2.1))*self.agentStepsNumberMax*8
+
         if self.coordinateOperationInstance.grip is True:
             done = False
         else:
