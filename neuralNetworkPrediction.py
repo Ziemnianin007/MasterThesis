@@ -153,7 +153,8 @@ class DQN:
         self.model.add(Dense(42, activation='sigmoid'))
         self.model.add(Dense(42, activation='sigmoid'))
         self.model.add(Dense(24, activation='sigmoid'))
-        self.model.add(Dense(actions, activation='softmax'))
+        self.model.add(Dense(12, activation='sigmoid'))
+        self.model.add(Dense(actions, activation='linear'))
         self.path = fileOperation.saveToFolder(self.model.to_json(), name='modelShape', folder="model\\checkpoint")
 
         # , stateful=False states are resetted together after each batch.
