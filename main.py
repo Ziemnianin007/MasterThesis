@@ -23,7 +23,7 @@ import neuralNetworkPrediction
 #exit()
 
 neuralNetworkPredictionInstance = neuralNetworkPrediction.DQN("Dobot", emulateOculus = True, visualize = True, teachingFilesPath = "C:\\Users\\jakub\\Documents\\W4\\MasterThesis\\PythonProgram\\tmp\\teach",
-                                                              policyValues = {"inner_policy": EpsGreedyQPolicy(), "attr":"eps", "value_max":0.4, "value_min":.1, "value_test":.0, "nb_steps":500000},
+                                                              policyValues = {"inner_policy": EpsGreedyQPolicy(), "attr":"eps", "value_max":0.15, "value_min":.1, "value_test":.0, "nb_steps":1200000},
                                                               dobotEmulation = False)
 #neuralNetworkPredictionInstance = neuralNetworkPrediction.DQN("CartPole-v1")
 neuralNetworkPredictionInstance.load()
