@@ -13,7 +13,8 @@ import coordinateOperation
 import analysis
 import neuralNetworkPrediction
 
-analysis = analysis.analysis()
+#analysis = analysis.analysis("C:\\Users\\jakub\\Documents\\W4\\MasterThesis\\PythonProgram\\tmp\\testResults_20")
+#analysis.analyseAllFiles()
 
 coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = True, save = True, emulateOculus = True,dobotDisconnected=True, teachingFilesPath = "C:\\Users\\jakub\\Documents\\W4\\MasterThesis\\PythonProgram\\tmp\\test")
 
