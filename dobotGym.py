@@ -34,8 +34,8 @@ class dobotGym(gym.Env):
         self.agentPositionZ = 0
         self.agentStep = 0.2
         self.agentMax = 200
-        self.action_space = spaces.Box(np.array([0,0,0,0,0,0]),
-                                         np.array([6,6,6,6,6,6]))
+        self.action_space = spaces.Box(np.array([0,0,0,0,0,0,0]),
+                                         np.array([7,7,7,7,7,7,7]))
         self.observation_space = spaces.Box(np.array([self.minX,self.minY,self.minZ,self.minX,self.minY,self.minZ,-self.agentMax,-self.agentMax,-self.agentMax, 0]),
                                        np.array([self.maxX,self.maxY,self.maxZ,self.maxX,self.maxY,self.maxZ,self.agentMax,self.agentMax,self.agentMax, self.agentStepsNumberMax])
                                             ,dtype=np.float32)
@@ -95,7 +95,7 @@ class dobotGym(gym.Env):
 
     def moveAgent(self,action):
         #self.agentStep = self.agentStepsNumberMax - self.agentStepsNumberActual
-
+        faster = 1
         if action == 0:
             self.agentPositionX += self.agentStep
         elif action == 1:
@@ -108,10 +108,12 @@ class dobotGym(gym.Env):
             self.agentPositionZ += self.agentStep
         elif action == 5:
             self.agentPositionZ += -self.agentStep
+        elif action == 6:
+            faster = 10
 
-        self.agentPositionX = self.agentPositionX - self.agentStep*self.agentPositionX/self.agentMax
-        self.agentPositionY = self.agentPositionY - self.agentStep*self.agentPositionY/self.agentMax
-        self.agentPositionZ = self.agentPositionZ - self.agentStep*self.agentPositionZ/self.agentMax
+        self.agentPositionX = self.agentPositionX - self.agentStep*self.agentPositionX/self.agentMax*faster
+        self.agentPositionY = self.agentPositionY - self.agentStep*self.agentPositionY/self.agentMax*faster
+        self.agentPositionZ = self.agentPositionZ - self.agentStep*self.agentPositionZ/self.agentMax*faster
 
         tooFar = False
         if  self.agentPositionX < -self.agentMax:
