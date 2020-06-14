@@ -10,25 +10,27 @@ from rl.policy import EpsGreedyQPolicy
 from collections import deque
 
 import coordinateOperation
-
+import analysis
 import neuralNetworkPrediction
 
-#coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = True, save = True, emulateOculus = True,dobotDisconnected=True)
+analysis = analysis.analysis()
 
-#coordinateOperationInstance.loadData(plot =True , loop = True)
+coordinateOperationInstance = coordinateOperation.coordinateOperation(plot = True, save = True, emulateOculus = True,dobotDisconnected=True, teachingFilesPath = "C:\\Users\\jakub\\Documents\\W4\\MasterThesis\\PythonProgram\\tmp\\test")
+
+coordinateOperationInstance.loadData(plot =True , loop = True)
 #coordinateOperationInstance.loadData(path= "C:/Users/jakub/Documents/W4/MasterThesis/PythonProgram/tmp/notWork/movePathSave_date_2020-5-24_19-11-5", plot =False, loop = False)
-#coordinateOperationInstance.runRawDriver()
+coordinateOperationInstance.runRawDriver()
 #coordinateOperationInstance.runCloserToPosition(30)
 #coordinateOperationInstance.runPolynomialPrediction(backPoints=10,deg=5)
 #exit()
 
-neuralNetworkPredictionInstance = neuralNetworkPrediction.DQN("Dobot", emulateOculus = True, visualize = True, teachingFilesPath = "C:\\Users\\jakub\\Documents\\W4\\MasterThesis\\PythonProgram\\tmp\\teach",
-                                                              policyValues = {"inner_policy": EpsGreedyQPolicy(), "attr":"eps", "value_max":0.3, "value_min":.05, "value_test":.0, "nb_steps":1000000},
+neuralNetworkPredictionInstance = neuralNetworkPrediction.DQN("Dobot", emulateOculus = True, visualize = True, teachingFilesPath = "C:\\Users\\jakub\\Documents\\W4\\MasterThesis\\PythonProgram\\tmp\\test",
+                                                              policyValues = {"inner_policy": EpsGreedyQPolicy(), "attr":"eps", "value_max":0.01, "value_min":0.01, "value_test":.0, "nb_steps":1000000},
                                                               dobotEmulation = False)
 #neuralNetworkPredictionInstance = neuralNetworkPrediction.DQN("CartPole-v1")
-neuralNetworkPredictionInstance.load()
+#neuralNetworkPredictionInstance.load()
 #neuralNetworkPredictionInstance.fit(True)
-neuralNetworkPredictionInstance.fit(False)
+#neuralNetworkPredictionInstance.fit(False)
 #neuralNetworkPredictionInstance.test(15)
 
 

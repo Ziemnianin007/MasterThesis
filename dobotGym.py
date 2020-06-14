@@ -109,7 +109,7 @@ class dobotGym(gym.Env):
         elif action == 5:
             self.agentPositionZ += -self.agentStep
         elif action == 6:
-            faster = 10
+            pass #faster = 10
 
         self.agentPositionX = self.agentPositionX - self.agentStep*self.agentPositionX/self.agentMax*faster
         self.agentPositionY = self.agentPositionY - self.agentStep*self.agentPositionY/self.agentMax*faster

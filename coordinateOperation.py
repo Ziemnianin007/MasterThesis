@@ -9,9 +9,11 @@ import time
 import threading
 import neuralNetworkPrediction
 import math
+import os
 
 class coordinateOperation:
-    def __init__(self, graphDataLength = 50, plot = True, save = True, emulateOculus = True, dobotDisconnected = False, dobotEmulation = False):
+    def __init__(self, graphDataLength = 50, plot = True, save = True, emulateOculus = True, dobotDisconnected = False, dobotEmulation = False, teachingFilesPath = None):
+        self.teachingFilesPath = teachingFilesPath
         self.dobotEmulation = dobotEmulation
         #home dobot magician in dobotstudio, then disconnect and run
         self.emulateOculus = emulateOculus
@@ -71,9 +73,12 @@ class coordinateOperation:
         self.grip = False
         self.oldGrip = False
         self.actualPositionOculus = None
+        self.path = fileOperation.saveToFolder(self.positionArray, name='movePathSave')
         if self.emulateOculus:
             emulateData = self.loadData(path= "C:/Users/jakub/Documents/W4/MasterThesis/PythonProgram/tmp/notWork/movePathSave_date_2020-5-24_19-11-5", plot =False, loop = False)
             self.oculusQuestEmulationLoadData(emulateData)
+            self.teachingFilesList = os.listdir(self.teachingFilesPath)
+            self.teachingFilesListIndex = 0
         if(dobotDisconnected is False and self.dobotEmulation is False):
             self.oculusRefreshingThread = threading.Thread(target=self.refreshActualPosition, daemon=True)
             self.oculusRefreshingThread.start()
@@ -371,46 +376,71 @@ class coordinateOperation:
     def endOfMoving(self):
         self.recording = False
 
+    def loadOculusDataFromFolder(self):
+        if len(self.teachingFilesList) <= self.teachingFilesListIndex:
+            self.teachingFilesListIndex = 0
+        path = self.teachingFilesPath + "\\" + self.teachingFilesList[self.teachingFilesListIndex].split(".")[0]
+        print("Loading VR path file number: ", self.teachingFilesListIndex, " from: ", path)
+
+        self.oculusQuestEmulationLoadData(self.loadData(path = path,plot =False , loop = False))
+        self.teachingFilesListIndex += 1
+
     def runRawDriver(self):
+        once = False
         while True:
             if self.grip is True:   # grip is triggered
                 if self.grip is not self.oldGrip:   # grip changed state, reset relative coordinates
                     self.preparationForMoving()     # calibration of the arm and reset of the variables
                     self.startRecording()   # records all incoming position
+                    once = False
                 self.coordinateFromOculusToDobotTranslation() # translating coordinates from oculus to dobot system
                 self.moveDobotToPreparedPosition()  # move dobot to position
             else:
                 self.endOfMoving()  # stops recording, stops movement
+                if self.emulateOculus is True and once is False:
+                    self.loadOculusDataFromFolder()
+                    once = True
+
 
     def runCloserToPosition(self, maxMove = 30):
         #self.path = fileOperation.saveToFolder(self.positionArray,name = 'movePathSave')
         #self.dobotHome()    #dobot goes to home position
         #self.oculusHomePosition() #oculus homing operation
+        once = False
         while(1):
             if self.grip is True:   #grip is trigerred
                 if self.grip is not self.oldGrip:   #grip changed state, reseting relative coordinates
                     self.preparationForMoving()
                     self.startRecording()
+                    once = False
                 self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
                 self.moveDobotCloserToPreparedPosition(maxMove)  #move dobot closer to position
             else:
                 self.endOfMoving()
+                if self.emulateOculus is True and once is False:
+                    self.loadOculusDataFromFolder()
+                    once = True
 
     def runPolynomialPrediction(self, backPoints = 10,deg = 5):
         #self.path = fileOperation.saveToFolder(self.positionArray,name = 'movePathSave')
         #self.dobotHome()    #dobot goes to home position
         #self.oculusHomePosition() #oculus homing operation
+        once = False
         while(1):
             if self.grip is True:   #grip is trigerred
                 if self.grip is not self.oldGrip:   #grip changed state, reseting relative coordinates
                     self.preparationForMoving()
                     self.startRecording()
+                    once = False
                 self.coordinateFromOculusToDobotTranslation() #translating coordinates from oculus to dobot system
                 if(len(self.positionArray['timestamp'])>0):
                     self.doPolynomialPrediction(backPoints, deg)
                 self.moveDobotToPreparedPosition()  #move dobot to position
             else:
                 self.endOfMoving()
+                if self.emulateOculus is True and once is False:
+                    self.loadOculusDataFromFolder()
+                    once = True
 
     def doPolynomialPrediction(self,backPoints,deg=5,backPointsTime=5,degTime=4):
         #filling with zeros
@@ -428,6 +458,9 @@ class coordinateOperation:
             backPointsTime = len(self.positionArray['timestamp'])
 
         #filling with points from array
+        if len(self.positionArray['oculusZ']) < backPoints+1:
+            return None
+
         for i in range(backPoints):
             pastPointsList[0][-i-1] = self.positionArray['oculusX'][-i-1]
             pastPointsList[1][-i-1] = self.positionArray['oculusY'][-i-1]
